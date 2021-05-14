@@ -19,10 +19,10 @@ SNIP_DIRS = [
 ]
 
 TYPE_PKG = 101
-TYPE_GROUP = 102 
+TYPE_GROUP = 102
 
 
-HELP_TEXT = """Markers:
+HELP_TEXT = _("""Markers:
     ${NN} | ${NN:default text}
 
 Macros:
@@ -72,7 +72,7 @@ Date, time:
     $CURRENT_MINUTE - The current minute
     $CURRENT_SECOND - The current second
     $CURRENT_SECONDS_UNIX - The number of seconds since the Unix epoch
-"""
+""")
 
 
 class DlgSnipMan:
@@ -87,10 +87,12 @@ class DlgSnipMan:
         self.file_snippets = {} # tuple (<pkg path>,<group>) : snippet dict
         self.modified = [] # (type, name)
     
-        w, h = 500, 400
+        w, h = 530, 400  # w=500 is too small for translations
+        bw, lw = 90, 80  # button width, label width
         self.h = ct.dlg_proc(0, ct.DLG_CREATE)
         ct.dlg_proc(self.h, ct.DLG_PROP_SET, 
                     prop={'cap': _('Manage snippets'),
+                        'w_min': 5 * bw,
                         'w': w,
                         'h': h,
                         'resize': True,
@@ -109,10 +111,10 @@ class DlgSnipMan:
                         'a_t': None,
                         'a_r': ('', ']'),
                         'a_b': ('',']'),
-                        'w_min': 60,
+                        'w_min': bw,
                         'sp_a': 6,
                         'autosize': True,
-                        'cap': 'OK',  
+                        'cap': _('OK'),  
                         'on_change': self._save_changes,
                         }
                     )
@@ -125,7 +127,7 @@ class DlgSnipMan:
                         'a_t': ('ok', '-'),
                         'a_r': ('ok', '['),
                         'a_b': ('',']'),
-                        'w_min': 60,
+                        'w_min': bw,
                         'sp_a': 6,
                         'autosize': True,
                         'cap': _('Cancel'),  
@@ -141,7 +143,7 @@ class DlgSnipMan:
                         'a_t': ('ok', '-'),
                         'a_r': None,
                         'a_b': ('',']'),
-                        'w_min': 60,
+                        'w_min': bw,
                         'sp_a': 6,
                         'autosize': True,
                         'cap': _('Editor\'s Lexer'),  
@@ -157,7 +159,7 @@ class DlgSnipMan:
                         'a_t': ('ok', '-'),
                         'a_r': None,
                         'a_b': ('',']'),
-                        'w_min': 60,
+                        'w_min': bw,
                         'sp_a': 6,
                         'sp_l': 10,
                         'autosize': True,
@@ -186,7 +188,7 @@ class DlgSnipMan:
                         'p': 'parent',
                         'a_l': ('', '['),
                         'a_t': ('','['),
-                        'w_min': 80,
+                        'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
                         'cap': _('Package: '),  
@@ -201,6 +203,7 @@ class DlgSnipMan:
                         'a_l': None,
                         'a_t': ('pkg_label','-'),
                         'a_r': ('',']'),
+                        'w_min': bw,
                         'sp_a': 3,
                         'cap': _('Delete...'),  
                         'en': False,
@@ -216,6 +219,7 @@ class DlgSnipMan:
                         'a_l': None,
                         'a_t': ('pkg_label','-'),
                         'a_r': ('del_pkg','['),
+                        'w_min': bw,
                         'sp_a': 3,
                         'cap': _('Add...'),  
                         'en': True,
@@ -245,7 +249,7 @@ class DlgSnipMan:
                         'p': 'parent',
                         'a_l': ('', '['),
                         'a_t': ('packages',']'),
-                        'w_min': 80,
+                        'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
                         'cap': _('Group: '),  
@@ -260,6 +264,7 @@ class DlgSnipMan:
                         'a_l': None,
                         'a_t': ('grp_label','-'),
                         'a_r': ('',']'),
+                        'w_min': bw,
                         'sp_a': 3,
                         'cap': _('Delete...'),  
                         'en': False,
@@ -275,6 +280,7 @@ class DlgSnipMan:
                         'a_l': None,
                         'a_t': ('grp_label','-'),
                         'a_r': ('del_group','['),
+                        'w_min': bw,
                         'sp_a': 3,
                         'cap': _('Add...'),  
                         'en': False,
@@ -305,7 +311,7 @@ class DlgSnipMan:
                         'p': 'parent',
                         'a_l': ('', '['),
                         'a_t': ('groups',']'),
-                        'w_min': 80,
+                        'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
                         'sp_l': 30,
@@ -321,6 +327,7 @@ class DlgSnipMan:
                         'a_l': None,
                         'a_t': ('lex_label','-'),
                         'a_r': ('',']'),
+                        'w_min': 2*bw + 3,
                         'sp_a': 3,
                         'cap': _('Add Lexer...'),  
                         'en': False,
@@ -349,7 +356,7 @@ class DlgSnipMan:
                         'p': 'parent',
                         'a_l': ('', '['),
                         'a_t': ('lexers',']'),
-                        'w_min': 80,
+                        'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
                         'cap': _('Snippet: '),  
@@ -364,6 +371,7 @@ class DlgSnipMan:
                         'a_l': None,
                         'a_t': ('snip_label','-'),
                         'a_r': ('',']'),
+                        'w_min': bw,
                         'sp_a': 3,
                         'cap': _('Delete...'),  
                         'en': False,
@@ -379,6 +387,7 @@ class DlgSnipMan:
                         'a_l': None,
                         'a_t': ('snip_label','-'),
                         'a_r': ('del_snip','['),
+                        'w_min': bw,
                         'sp_a': 3,
                         'cap': _('Add...'),  
                         'en': False,
@@ -409,7 +418,7 @@ class DlgSnipMan:
                         'p': 'parent',
                         'a_l': ('', '['),
                         'a_t': ('snippets',']'),
-                        'w_min': 80,
+                        'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
                         'sp_l': 30,
@@ -501,13 +510,13 @@ class DlgSnipMan:
         self._on_package_selected(-1,-1)
 
         # select group
-        if sel_pkg != None  and sel_group  and sel_group in sel_pkg.get('files', {}):
+        if sel_pkg is not None  and sel_group  and sel_group in sel_pkg.get('files', {}):
             sel_group_ind = self._groups_items.index(sel_group)
             ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_groups, prop={'val': sel_group_ind})
             self._on_group_selected(-1,-1)
             
             # select snippet
-            if sel_snip != None  and sel_snip in self.snip_items:
+            if sel_snip is not None  and sel_snip in self.snip_items:
                 sel_snip_ind = self.snip_items.index(sel_snip)
                 ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_snippets, prop={'val': sel_snip_ind})
                 self._on_snippet_selected(-1,-1)
@@ -517,7 +526,7 @@ class DlgSnipMan:
         ct.dlg_proc(self.h, ct.DLG_SHOW_MODAL)
         ct.dlg_proc(self.h, ct.DLG_FREE)
         
-        if self.h_help != None:
+        if self.h_help is not None:
             ct.dlg_proc(self.h_help, ct.DLG_FREE)
             
         return self.snippets_changed
@@ -529,14 +538,14 @@ class DlgSnipMan:
         
         pkg = self._get_sel_pkg()
         snips_fn,lexers = self._get_sel_group(pkg)
-        snip_name,snip = self._get_sel_snip(pkg, snips_fn)  if lexers != None else  (None,None)
+        snip_name,snip = self._get_sel_snip(pkg, snips_fn)  if lexers is not None else  (None,None)
         
         _pkg_name = pkg["name"]  if pkg else  "<no_pkg>"
         #pass; print(' + {} # {}, [{}] # <{}>:<{}>'.format(_pkg_name, snips_fn, lexers, snip_name, snip))
         
         ### load data from form
         # check if modified group's lexers
-        if snips_fn != None and lexers != None:
+        if snips_fn is not None and lexers is not None:
             oldlexes = pkg["files"][snips_fn]
             p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_lex)
             newlexs = [lex.strip() for lex in p['val'].split(',') if lex.strip()]
@@ -546,7 +555,7 @@ class DlgSnipMan:
                 self.modified.append((TYPE_PKG, pkg['path']))
 
             # check if modified snippet (alias|body)  (only if group is selected)
-            if snip_name != None  and snip != None:
+            if snip_name is not None  and snip is not None:
                 oldalias = snip.get('prefix')
                 p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
                 newalias = p['val']
@@ -581,7 +590,7 @@ class DlgSnipMan:
             elif mod[0] == TYPE_GROUP: 
                 type_, package_dir, snips_fn, snip_name = [*mod, None][0:4] # fourth item is optional : None
                 snips = self.file_snippets.get((package_dir, snips_fn))
-                if snips == None:
+                if snips is None:
                     print(_('! ERROR: trying to save snippets for unloaded group: {0}').format((package_dir, snips_fn)))
                     continue
                     
@@ -653,7 +662,7 @@ class DlgSnipMan:
         if not pkg or not snips_fn:
             return
 
-        if self.file_snippets.get((pkg['path'],snips_fn)) == None:
+        if self.file_snippets.get((pkg['path'],snips_fn)) is None:
             self._load_package_snippets(pkg['path'])
             #pass; print('   + loaded group snips')
 
@@ -700,7 +709,7 @@ class DlgSnipMan:
         
         pkg = self._get_sel_pkg()
         
-        if pkg == None: # no package selected
+        if pkg is None: # no package selected
             for n in [self.n_groups,  self.n_del_pkg]:
                 ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n, prop={'en': False,})
             self._groups_items = None
@@ -749,7 +758,7 @@ class DlgSnipMan:
         if name:
             snips = self.file_snippets.get((pkg['path'], snips_fn)) # snippets of selected group will be loaded
 
-            if snips != None:
+            if snips is not None:
                 if name not in snips:
                     snips[name] = {'prefix':name, 'body':''}
                     self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, name))
@@ -769,7 +778,7 @@ class DlgSnipMan:
         #pass; print(' ~~~ create new B:Group ===')
         lex = ct.ed.get_prop(ct.PROP_LEXER_FILE)
         name = lex  if lex else  'snippets'
-        name = ct.dlg_input('New snippet group filename:', name)
+        name = ct.dlg_input(_('New snippet group filename:'), name)
         #pass; print('new group name:{0}'.format(name))
             
         if name:
@@ -797,11 +806,11 @@ class DlgSnipMan:
             
         if name:
             newpkg = {'name': name,
-                        'files': {}, 
-                        'path': os.path.join(MAIN_SNIP_DIR, name)}
+                      'files': {}, 
+                      'path': os.path.join(MAIN_SNIP_DIR, name)}
             
             if os.path.exists(os.path.join(MAIN_SNIP_DIR, name, 'config.json')):
-                print(_('"{0}" - package already exists').format(os.path.join(MAIN_SNIP_DIR, name, 'config.json')))
+                print(_('"{0}" - package already exists.').format(os.path.join(MAIN_SNIP_DIR, name, 'config.json')))
                 return
                         
             self.packages.append(newpkg) # update packages and select new
@@ -819,7 +828,7 @@ class DlgSnipMan:
         if not pkg:
             return
         res = ct.dlg_input(_('To delete package "{}" - delete the following directory:').format(pkg['name']), pkg['path'])
-        if res != None: # removeing
+        if res is not None: # removeing
             #pass; print('* confirmed package deletion')
             self.packages.remove(pkg)
             self._fill_forms()
@@ -837,7 +846,7 @@ class DlgSnipMan:
             fstr = _('To delete snippet group "{0}" from package "{1}" - delete the following file:')
             group_filepath = os.path.join(pkg['path'], 'snippets', snips_fn)
             res = ct.dlg_input(fstr.format(snips_fn, pkg['name']), group_filepath)
-            if res != None:
+            if res is not None:
                 #pass; print('* confirmed group deletion')
                 del pkg['files'][snips_fn]
                 self.modified.append((TYPE_PKG, pkg['path'])) # package config is modified
@@ -845,7 +854,7 @@ class DlgSnipMan:
         
             
     def _menu_add_lex(self, *args, lex=None, **vargs):
-        if lex == None: # initial call: show menu
+        if lex is None: # initial call: show menu
             lexs = ct.lexer_proc(ct.LEXER_GET_LEXERS, '')
             
             h_menu = ct.menu_proc(0, ct.MENU_CREATE)
@@ -976,7 +985,7 @@ class DlgSnipMan:
         
         
     def _dlg_help(self, *args, **vargs):
-        if self.h_help == None:
+        if self.h_help is None:
             w, h = 750, 600
             self.h_help = ct.dlg_proc(0, ct.DLG_CREATE)
             ct.dlg_proc(self.h_help, ct.DLG_PROP_SET, 
