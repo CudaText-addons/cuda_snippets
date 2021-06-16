@@ -71,7 +71,7 @@ class Command:
             focused = items.index(self.last_snippet)
         except ValueError:
             focused = 0
-        i = ct.dlg_menu(ct.MENU_LIST, names, focused=focused, caption=_('Snippets'))
+        i = ct.dlg_menu(ct.DMENU_LIST, names, focused=focused, caption=_('Snippets'))
         if i is None:
             return
         self.last_snippet = items[i]
@@ -165,7 +165,7 @@ class Command:
             return
 
         mnu = [s['name']+'\t'+s['url'] for s in rec]
-        res = ct.dlg_menu(ct.MENU_LIST_ALT, mnu, caption=_('Visit page of snippets'))
+        res = ct.dlg_menu(ct.DMENU_LIST_ALT, mnu, caption=_('Visit page of snippets'))
         if res is None:
             return
 
@@ -184,7 +184,7 @@ class Command:
             return
 
         mnu = [s['name'] for s in rec]
-        res = ct.dlg_menu(ct.MENU_LIST, mnu, caption=_('Remove snippets'))
+        res = ct.dlg_menu(ct.DMENU_LIST, mnu, caption=_('Remove snippets'))
         if res is None:
             return
 
