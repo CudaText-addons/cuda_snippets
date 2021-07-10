@@ -79,9 +79,9 @@ def load_json(fp, *args, **kwargs):
         if LONG_STRING in line:
             line = line.replace(LONG_STRING, '"')
 
-        # del bad JSON chars
-        line = line.replace(chr(0xC2), '')
-        line = line.replace(chr(0xA0), '')
+        # del bad spaces like in "Reactjs snippets"
+        for n in [0xC2, 0xA0]:
+            line = line.replace(chr(n), ' ')
 
         # \n here to allow user to see the resulting text in Console if exception occurs in json.loads
         standard_json += line + " " * keep_trail_space + '\n'
