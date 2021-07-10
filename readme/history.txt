@@ -1,4 +1,7 @@
 
+2021.07.11
++ add: plugin ignores 'bad chars' in JSON content, like in "Reactjs snippets"
+
 2021.05.13
 + add: things like '$0' work in snippet body, if escaped to '\$0' (patch by @halfbrained)
 
