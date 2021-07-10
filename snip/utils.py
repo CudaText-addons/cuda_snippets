@@ -79,7 +79,12 @@ def load_json(fp, *args, **kwargs):
         if LONG_STRING in line:
             line = line.replace(LONG_STRING, '"')
 
-        standard_json += line + " " * keep_trail_space
+        # del bad JSON chars
+        line = line.replace(chr(0xC2), '')
+        line = line.replace(chr(0xA0), '')
+
+        # \n here to allow user to see the resulting text in Console if exception occurs in json.loads
+        standard_json += line + " " * keep_trail_space + '\n'
 
     # Removing non-standard trailing commas
     standard_json = standard_json.replace(",]", "]")
@@ -87,4 +92,9 @@ def load_json(fp, *args, **kwargs):
     if not standard_json:
         return {}
     # Calls the wrapped to parse JSON
-    return json.loads(standard_json, *args, **kwargs)
+    try:
+        return json.loads(standard_json, *args, **kwargs)
+    except json.decoder.JSONDecodeError:
+        print('ERROR: Plugin "Snippets" failed to load JSON content')
+        print(standard_json)
+        raise
