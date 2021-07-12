@@ -96,7 +96,6 @@ class DlgSearch:
                     prop={'cap': _('Search snippets'),
                           'w': w,
                           'h': h,
-                          # 'resize': False,
                           'border': ct.DBORDER_SIZE,
                           "keypreview": True,
                           'on_key_up': self.press_key,

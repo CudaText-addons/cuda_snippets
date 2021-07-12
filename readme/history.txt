@@ -1,5 +1,6 @@
 
-2021.07.11
+2021.07.12
+- fix: avoid deprecated API
 + add: plugin ignores 'bad chars' in JSON content, like in "Reactjs snippets"
 
 2021.05.13

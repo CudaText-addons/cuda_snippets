@@ -95,7 +95,7 @@ class DlgSnipMan:
                         'w_min': 5 * bw,
                         'w': w,
                         'h': h,
-                        'resize': True,
+                        'border': ct.DBORDER_SIZE,
                         }
                     )
                     
@@ -992,7 +992,7 @@ class DlgSnipMan:
                         prop={'cap': _('Syntax Help'),
                             'w': w,
                             'h': h,
-                            'resize': True,
+                            'border': ct.DBORDER_SIZE,
                             }
                         )
                     

@@ -19,7 +19,7 @@ class DlgLexersCompare:
                     prop={'cap': _('Setup snippet lexer(s)'),
                           'w': w,
                           'h': h,
-                          'resize': False,
+                          'border': ct.DBORDER_DIALOG,
                           "keypreview": True,
                           }
                     )
