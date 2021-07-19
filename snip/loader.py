@@ -21,7 +21,7 @@ def mkdir(*args):
 
 
 def save_to_json(data, fp, sort_keys=False):
-    with open(fp, 'w', encoding='utf8') as f:
+    with open(fp, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, sort_keys=sort_keys)
 
 
@@ -38,7 +38,7 @@ def parse_vs_snippets_file(fp, lex, sn_type=VS_SNIPPET):
         except Exception:
             pass
 
-    with open(fp, mode='r', encoding='utf-8') as f:
+    with open(fp, mode='r', encoding='utf-8', errors='replace') as f:
         data = load_json(f)
         for k, v in data.items():
             if not isinstance(v, dict):
@@ -54,7 +54,7 @@ def parse_vs_snippets_file(fp, lex, sn_type=VS_SNIPPET):
 
 def parse_snippet_file(fp):
     """Parser for standard CudaText snippet file"""
-    with open(fp, mode='r', encoding='utf-8') as f:
+    with open(fp, mode='r', encoding='utf-8', errors='replace') as f:
         res = Snippet()
         res.type = CT_SNIPPET
 
@@ -108,7 +108,7 @@ def parse_simple_snippet_line(fp):
         return optv, line
 
     res = []
-    with open(fp, mode='r', encoding='utf-8') as f:
+    with open(fp, mode='r', encoding='utf-8', errors='replace') as f:
         for line in f.readlines():
             if not line or line[0] in ('#', ' '):
                 continue
@@ -180,7 +180,7 @@ class Loader():
             if not os.path.exists(cfg_path):
                 print("{} - it isn't package".format(cfg_path))
                 return
-            with open(cfg_path, 'r', encoding='utf8') as _cfg:
+            with open(cfg_path, 'r', encoding='utf-8', errors='replace') as _cfg:
                 cfg = json.load(_cfg)
             lexers = set()
             for lx in cfg.get('files', {}).values():
