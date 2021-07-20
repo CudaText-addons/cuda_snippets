@@ -1,3 +1,5 @@
+2021.07.20
++ add: "Rename snippet" to Snippet Manager (patch by @halfbrained)
 
 2021.05.13
 + add: things like '$0' work in snippet body, if escaped to '\$0' (patch by @halfbrained)
