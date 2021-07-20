@@ -410,6 +410,22 @@ class DlgSnipMan:
                         }
                     )
 
+        self.n_rename_snip = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_rename_snip,
+                    prop={
+                        'name': 'rename_snip',
+                        'p': 'parent',
+                        'a_l': None,
+                        'a_t': ('add_snip',']'),
+                        'a_r': ('',']'),
+                        'w_min': 2*bw + 3,
+                        'sp_a': 3,
+                        'cap': _('Rename snippet...'),
+                        'en': False,
+                        'on_change': self._dlg_rename_snip,
+                        }
+                    )
+
         # alias
         n = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'label')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
@@ -417,7 +433,7 @@ class DlgSnipMan:
                         'name': 'alias_label',
                         'p': 'parent',
                         'a_l': ('', '['),
-                        'a_t': ('snippets',']'),
+                        'a_t': ('rename_snip',']'),
                         'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
@@ -636,7 +652,8 @@ class DlgSnipMan:
         if not all((pkg, snips_fn, snip_name, snip)):
             return
 
-        self._enable_ctls(True, self.n_alias, self.n_edit,  self.n_add_snip, self.n_del_snip)
+        self._enable_ctls(True, self.n_alias, self.n_edit,  self.n_add_snip, self.n_del_snip,
+                                self.n_rename_snip)
 
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_alias, prop={
                     'val': snip.get('prefix', ''),
@@ -650,7 +667,8 @@ class DlgSnipMan:
         #pass; print('group sel')
 
         # disable all below 'group'
-        self._enable_ctls(False, self.n_alias, self.n_edit,  self.n_add_snip, self.n_del_snip)
+        self._enable_ctls(False, self.n_alias, self.n_edit,  self.n_add_snip, self.n_del_snip,
+                                    self.n_rename_snip)
 
         self.ed.set_text_all('')
 
@@ -702,7 +720,8 @@ class DlgSnipMan:
     def _on_package_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('pkg sel')
         # disable all below 'group'
-        disable_btns = [self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip, self.n_del_snip]
+        disable_btns = [self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip,
+                        self.n_del_snip, self.n_rename_snip]
         self._enable_ctls(False, self.n_lex, self.n_snippets, self.n_alias, self.n_edit,  *disable_btns)
 
         self.ed.set_text_all('')
@@ -889,6 +908,31 @@ class DlgSnipMan:
                     del snips[snip_name]
                     self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
                     self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn)
+
+
+    def _dlg_rename_snip(self, *args, **vargs):
+        pkg = self._get_sel_pkg()
+        snips_fn,lexers = self._get_sel_group(pkg)
+        snip_name,snip = self._get_sel_snip(pkg, snips_fn)
+
+        if pkg  and snips_fn  and snip_name  and snip:
+            name = ct.dlg_input(_('New snippet name:'), snip_name)
+            #pass; print('new group name:{0}'.format(name))
+
+            if name and name != snip_name:
+                snips = self.file_snippets.get((pkg['path'], snips_fn))
+                snips[name] = snip  # set new
+                del snips[snip_name]    # del old
+                self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
+                self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, name))
+                # store current ui values
+                _p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
+                ui_alias = _p['val']
+                ui_body = self.ed.get_text_all()
+                self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn, sel_snip=name)
+                # restore values
+                ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_alias, prop={'val': ui_alias})
+                self.ed.set_text_all(ui_body)
 
 
     def _load_package_snippets(self, package_path):

@@ -1,3 +1,5 @@
+2021.07.20
++ add: "Rename snippet" to Snippet Manager (patch by @halfbrained)
 
 2021.07.19
 - fix: avoid crash if snippet files have not-UTF8 coding
