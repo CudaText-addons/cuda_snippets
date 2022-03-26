@@ -4,6 +4,8 @@ import os
 import shutil
 import webbrowser
 
+from cudatext import *
+
 import cudatext as ct
 from cuda_snippets import snip as sn
 # dev.tstop()
@@ -198,3 +200,82 @@ class Command:
         if not d:
             return
         sn.convert_old_pkg(d, os.path.join(_data, 'snippets_ct'))
+    
+    def phpstorm_import(self):
+        dlg_dir_ = ct.dlg_dir('', "Select folder with live-templates of PhpStorm")
+        if (dlg_dir_):
+            import xml.etree.ElementTree as ET
+            import json
+            
+            sep_ = os.sep
+            
+            i = j = 0
+            phpstorm_json = {}
+            
+            files_ = os.listdir(dlg_dir_)
+            for dlg_file_ in files_:
+                path_ = dlg_dir_ + sep_ + dlg_file_
+                tree = ET.parse(path_)
+                root = tree.getroot()
+            
+                res_ = []
+                for child in root:
+                    value_ = child.get("value").replace("$END$", "${0}")
+                    desc_ = child.get("name")
+                    name_ = '[' + desc_ + '] ' + child.get("description") 
+                    res_.append({
+                         name_: {
+                            'value': value_,
+                            'desc': desc_ 
+                        }
+                    })
+            
+                snippets_dir_ = os.path.join(ct.app_path(ct.APP_DIR_DATA), 'snippets_ct') + sep_ + 'phpstorm'
+                if not os.path.exists(snippets_dir_):
+                    os.makedirs(snippets_dir_)
+                
+                snippets_dir__ = snippets_dir_ + sep_ + 'snippets'
+                if not os.path.exists(snippets_dir__):
+                    os.makedirs(snippets_dir__)
+            
+                config_json = {
+                    "name": "phpstorm",
+                    "files": {
+                        "phpstorm.json": [
+                            "PHP",
+                            "PHP_",
+                            "HTML",
+                            "HTML_",
+                            "CSS",
+                            "JavaScript"
+                        ]
+                    }
+                }
+                fout = open(snippets_dir_ + sep_ + 'config.json', 'w')
+                json.dump(config_json, fout, indent=4)
+                fout.close()
+            
+                for res__ in res_:
+                    for k, v in res__.items():
+                        body_ = prefix_ = ''
+                        for k_, v_ in v.items():
+                            if k_ == 'value':
+                                body_ = v_.split("\n")
+                            if k_ == 'desc':
+                                prefix_ = v_
+                            phpstorm_json[k] = {
+                                "prefix": prefix_,
+                                "body": body_
+                            }
+                        j += 1
+                i += 1
+            
+            if len(phpstorm_json) > 0:
+                fout = open(snippets_dir__ + sep_ + 'phpstorm.json', 'a')
+                json.dump(phpstorm_json, fout, indent=4)
+                fout.close()
+            
+            if i > 0:
+                msg_box("Files processed: " + str(i) + ".\n" + "Imported snippets: " + str(j) + ".\n\n" + "Please restart CudaText to apply the updates.", MB_OK)
+            else:
+                msg_box("Live-templates not found!", MB_OK+MB_ICONERROR)

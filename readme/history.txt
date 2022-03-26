@@ -1,4 +1,7 @@
 2021.07.20
++ add: import from phpstorm (patch by @ildarkhasanshin)
+
+2021.07.20
 + add: "Rename snippet" to Snippet Manager (patch by @halfbrained)
 
 2021.07.19

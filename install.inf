@@ -73,3 +73,13 @@ method=issues_vs
 section=commands
 caption=Snippets\Convert snippets package from old format
 method=convert_from_old_format
+
+[item24]
+section=commands
+caption=Snippets\-
+method=__
+
+[item25]
+section=commands
+caption=Snippets\Import live-templates (snippets) from PhpStorm
+method=phpstorm_import
