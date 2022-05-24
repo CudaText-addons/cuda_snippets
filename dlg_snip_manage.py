@@ -23,7 +23,10 @@ TYPE_GROUP = 102
 
 
 HELP_TEXT = _("""Markers:
-    ${NN} | ${NN:default text}
+    ${NN}
+or:
+    ${NN:default_text}
+where NN is a number.
 
 Macros:
     ${sel} - Text selected before snippet insertion (if snippet called with Tab key, it's empty string)
