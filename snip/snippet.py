@@ -4,6 +4,7 @@ from collections import OrderedDict
 from os import path as op
 import os
 from time import strftime, time
+from subprocess import check_output
 
 import cudatext as ct
 import cudatext_cmd
@@ -18,6 +19,7 @@ TABSTOP = 0
 PLACEHOLDER = 1
 RE_DATE = re.compile(r'\${date:(.*?)}')
 RE_ENV = re.compile(r'\${env:(.*?)}')
+RE_CMD = re.compile(r'\${cmd:(.*?)}')
 
 _tabstop = r"\\?\$(\d+)"
 _placeholder_head = r"\${(\d+):?"
@@ -333,6 +335,19 @@ class Snippet:
             _ln += ln[start:]
             return _ln
 
+        def cmd_var(ln):
+            """${cmd:nnnn}"""
+            start = 0
+            _ln = ""
+            for p in RE_CMD.finditer(ln):
+                text = p.group(1)
+                cwd = os.path.dirname(ct.ed.get_filename()) or os.getcwd()
+                text = check_output(text, cwd=cwd, shell=True).decode("utf-8")
+                _ln += ln[start:p.start(0)] + text
+                start = p.end(0)
+            _ln += ln[start:]
+            return _ln
+
         ct_variables = {
             # cudatext macro
             '${sel}': v.text_sel,  # The currently selected text or the empty string
@@ -352,6 +367,7 @@ class Snippet:
         for i, ln in enumerate(sn):
             ln = date_var(ln)
             ln = env_var(ln)
+            ln = cmd_var(ln)
             for var, v in ct_variables.items():
                 ln = ln.replace(var, v)
             sn[i] = ln
