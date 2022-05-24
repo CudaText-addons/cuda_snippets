@@ -41,6 +41,7 @@ Macros:
 
     ${date:nnnn} - Current date/time formatted by string "nnnn"; see Python docs
     ${env:nnnn} - Value of OS environment variable "nnnn"
+    ${cmd:nnnn} - Output of OS shell command "nnnn"
 
 Sublime ($NAME | ${NAME}):
     $TM_SELECTED_TEXT - The currently selected text or the empty string

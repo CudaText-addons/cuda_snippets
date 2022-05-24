@@ -1,3 +1,7 @@
+
+2022.05.24
++ add: support macro to run external commands: ${cmd:command_here}
+
 2021.07.20
 + add: "Rename snippet" to Snippet Manager (patch by @halfbrained)
 
