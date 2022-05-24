@@ -22,7 +22,7 @@ TYPE_PKG = 101
 TYPE_GROUP = 102
 
 
-HELP_TEXT = _("""Markers:
+HELP_TEXT = _("""Tab-stop markers:
     ${NN}
 or:
     ${NN:default_text}
@@ -46,7 +46,7 @@ Macros:
     ${env:nnnn} - Value of OS environment variable "nnnn"
     ${cmd:nnnn} - Output of OS shell command "nnnn"
 
-Sublime ($NAME | ${NAME}):
+Macros like in Sublime Text, $NAME or ${NAME}:
     $TM_SELECTED_TEXT - The currently selected text or the empty string
     $TM_CURRENT_LINE - The contents of the current line
     $TM_CURRENT_WORD - The contents of the word under cursor or the empty string
@@ -63,7 +63,7 @@ Sublime ($NAME | ${NAME}):
     $BLOCK_COMMENT_END - Current lexer's "block comment" end symbols (or empty string)
     $LINE_COMMENT - Current lexer's "line comment" symbols (or empty string)
 
-Date, time:
+Date/time:
     $CURRENT_YEAR - The current year
     $CURRENT_YEAR_SHORT - The current year's last two digits
     $CURRENT_MONTH - The month as two digits (e.g. '02')
