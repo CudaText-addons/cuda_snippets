@@ -256,15 +256,16 @@ class Snippet:
             ed.cmd(cudatext_cmd.cmd_Markers_GotoLastAndDelete)
         else:
             # place caret after text
-            len_y = len(s_text)
-            if len_y == 0:
-                pass
-            elif len_y == 1:
-                len_x = len(s_text[0])
-                ed.set_caret(x0 + len_x, y0)
-            else:
-                len_x = len(s_text[-1])
-                ed.set_caret(len_x, y0 + len_y)
+            if s_text:
+                lines_cnt = 0
+                for s in s_text:
+                    lines_cnt += len(s.splitlines())
+                lines_last = s_text[-1].splitlines()
+                new_x = len(lines_last[-1])
+                if lines_cnt == 1:
+                    new_x += x0
+                new_y = y0 + lines_cnt - 1
+                ed.set_caret(new_x, new_y)
 
     @staticmethod
     def parse_vars_vs(v, sn):
