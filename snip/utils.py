@@ -1,9 +1,9 @@
 import json
 import string
 
-CHARS_SNIP = string.ascii_letters + string.digits + '_.$>:'
-# char '>' is here to disable plugin work after "ul>li",
-# to pass it to Emmet (which has lower event priority)
+CHARS_SNIP = string.ascii_letters + string.digits + '_.$>:#'
+# char '>' is here to disable plugin work after "ul>li", to pass it to Emmet (which has lower event priority)
+# chars '.#' are here to disable plugin work after '#dd' and '.dd', to pass it to Emmet
 
 
 def get_word(ed):
