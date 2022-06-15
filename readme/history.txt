@@ -1,4 +1,7 @@
 
+2022.06.15
+- fix: Emmet abbreviation '#dd' must not expand to '#<dd></dd>'
+
 2022.05.24
 + add: support macro to run external commands: ${cmd:command_here}
 
