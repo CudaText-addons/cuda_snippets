@@ -194,7 +194,7 @@ class Command:
 
     def convert_from_old_format(self):
         _data = ct.app_path(ct.APP_DIR_DATA)
-        d = ct.dlg_dir(os.path.join(_data, 'snippets'), caption='Select snippets package')
+        d = ct.dlg_dir(os.path.join(_data, 'snippets'), caption=_('Select snippets package'))
         if not d:
             return
         sn.convert_old_pkg(d, os.path.join(_data, 'snippets_ct'))

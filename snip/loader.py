@@ -178,7 +178,7 @@ class Loader():
                 continue
             cfg_path = os.path.join(pkg, 'config.json')
             if not os.path.exists(cfg_path):
-                print("{} - it isn't package".format(cfg_path))
+                print(_("{} - it isn't package").format(cfg_path))
                 return
             with open(cfg_path, 'r', encoding='utf-8', errors='replace') as _cfg:
                 cfg = json.load(_cfg)
