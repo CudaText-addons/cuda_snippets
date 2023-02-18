@@ -261,7 +261,7 @@ class Snippet:
                 for s in s_text:
                     lines_cnt += len(s.splitlines())
                 lines_last = s_text[-1].splitlines()
-                new_x = len(lines_last[-1])
+                new_x = len(lines_last[-1]) if lines_last else 0
                 if lines_cnt == 1:
                     new_x += x0
                 new_y = y0 + lines_cnt - 1
