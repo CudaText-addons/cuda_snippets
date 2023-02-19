@@ -152,9 +152,9 @@ class Loader():
 
     def load_by_lexer(self, lex):
         for pkg in self.packages:
-            if not pkg['loaded'] and lex in pkg['lexers']:
+            if not pkg['loaded'] and ('*' in pkg['lexers'] or lex in pkg['lexers']):
                 self.load_pkg(pkg)
-        return self.snippets.get(lex, [])
+        return self.snippets.get(lex, []) or self.snippets.get('*', [])
 
     def load_all(self):
         for pkg in self.packages:
