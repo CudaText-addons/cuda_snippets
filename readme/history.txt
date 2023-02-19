@@ -1,5 +1,5 @@
 2023.02.19
-+ add: allow VSCode-format snippets (created via plugin's dialog) to be for ALL lexers. To do so, enter 'group lexers' field value '*'.
++ add: allow VSCode-format snippets (created via plugin's dialog "Manage snippets") to be for ALL lexers. To do so, enter "group lexers" field value '*'.
 
 2022.06.15
 - fix: Emmet abbreviation '#dd' must not expand to '#<dd></dd>'
