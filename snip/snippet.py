@@ -164,6 +164,10 @@ class Snippet:
         if len(carets) != 1:
             return
         x0, y0, x1, y1 = carets[0]
+        # reorder coords if necessary (low to high) (fixes CudaText bug #4963)
+        if y1 > -1:
+            if (y0 > y1 or (y0 == y1 and x0 > x1)):
+                x0, x1, y0, y1 = x1, x0, y1, y0
 
         tab_spaces = ed.get_prop(ct.PROP_TAB_SPACES)
         tab_size = ed.get_prop(ct.PROP_TAB_SIZE)
