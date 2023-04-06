@@ -1,3 +1,7 @@
+2023.04.07
+* change: menu-dialog disables filtering by lexer-name
+- fix: if selection had the caret on the right, ${sel} macro expanded with wrong indent (thanks @veksha)
+
 2023.02.19
 + add: allow VSCode-format snippets (created via plugin's dialog "Manage snippets") to be for ALL lexers. To do so, enter "group lexers" field value '*'.
 
