@@ -78,7 +78,7 @@ class Command:
             focused = items.index(self.last_snippet)
         except ValueError:
             focused = 0
-        i = ct.dlg_menu(ct.DMENU_LIST, names, focused=focused, caption=_('Snippets'))
+        i = ct.dlg_menu(ct.DMENU_LIST+ct.DMENU_NO_FULLFILTER, names, focused=focused, caption=_('Snippets'))
         if i is None:
             return
         self.last_snippet = items[i]
