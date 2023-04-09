@@ -1,15 +1,11 @@
 import os
 import json
-
-#DBG
 import datetime
-
 import cudatext as ct
 from cuda_snippets import vs
 
 from cudax_lib import get_translation
 _   = get_translation(__file__)  # I18N
-
 
 DATA_DIR = ct.app_path(ct.APP_DIR_DATA)
 MAIN_SNIP_DIR = os.path.join(DATA_DIR, 'snippets_ct')
@@ -87,7 +83,6 @@ class DlgSnipMan:
         self.last_selected_pkg_grp = None
         self.last_selected_snippet = None
         self.snippets_changed = False
-        self.h_help = None
 
         self.packages = self._load_packages()
         self._sort_pkgs()
@@ -554,9 +549,6 @@ class DlgSnipMan:
         ct.dlg_proc(self.h, ct.DLG_SCALE)
         ct.dlg_proc(self.h, ct.DLG_SHOW_MODAL)
         ct.dlg_proc(self.h, ct.DLG_FREE)
-
-        if self.h_help is not None:
-            ct.dlg_proc(self.h_help, ct.DLG_FREE)
 
         return self.snippets_changed
 
@@ -1126,26 +1118,27 @@ class DlgSnipMan:
 
 
     def _dlg_help(self, *args, **vargs):
-        if self.h_help is None:
-            w, h = 750, 600
-            self.h_help = ct.dlg_proc(0, ct.DLG_CREATE)
-            ct.dlg_proc(self.h_help, ct.DLG_PROP_SET,
-                        prop={'cap': _('Macros Help'),
-                            'w': w,
-                            'h': h,
-                            'border': ct.DBORDER_SIZE,
-                            }
-                        )
+        w, h = 750, 600
+        h_help = ct.dlg_proc(0, ct.DLG_CREATE)
+        ct.dlg_proc(h_help, ct.DLG_PROP_SET,
+                    prop={'cap': _('Macros Help'),
+                        'w': w,
+                        'h': h,
+                        'border': ct.DBORDER_SIZE,
+                        }
+                    )
 
-            n = ct.dlg_proc(self.h_help, ct.DLG_CTL_ADD, 'memo')
-            ct.dlg_proc(self.h_help, ct.DLG_CTL_PROP_SET, index=n,
-                        prop={
-                            'name': 'help_memo',
-                            'align': ct.ALIGN_CLIENT,
-                            'val': HELP_TEXT,
-                            'sp_a':6,
-                            }
-                        )
+        n = ct.dlg_proc(h_help, ct.DLG_CTL_ADD, 'memo')
+        ct.dlg_proc(h_help, ct.DLG_CTL_PROP_SET, index=n,
+                    prop={
+                        'name': 'help_memo',
+                        'align': ct.ALIGN_CLIENT,
+                        'val': HELP_TEXT,
+                        'sp_a': 6,
+                        }
+                    )
 
-        ct.dlg_proc(self.h_help, ct.DLG_SHOW_MODAL)
-
+        ct.dlg_proc(h_help, ct.DLG_SCALE)
+        ct.dlg_proc(h_help, ct.DLG_SHOW_MODAL)
+        ct.dlg_proc(h_help, ct.DLG_FREE)
+        h_help = None
