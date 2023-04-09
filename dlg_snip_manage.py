@@ -543,7 +543,7 @@ class DlgSnipMan:
 
 
     def show_add_snip(self):
-        #ct.dlg_proc(self.h, ct.DLG_SCALE)
+        ct.dlg_proc(self.h, ct.DLG_SCALE)
         ct.dlg_proc(self.h, ct.DLG_SHOW_MODAL)
         ct.dlg_proc(self.h, ct.DLG_FREE)
 
