@@ -83,6 +83,7 @@ class DlgSnipMan:
     def __init__(self, select_lex=None):
         self.select_lex = select_lex # select first group with this lexer, mark in menus
 
+        self.current_pkg_readonly = False
         self.snippets_changed = False
         self.h_help = None
 
@@ -471,7 +472,6 @@ class DlgSnipMan:
                         'a_b': ('',']'),
                         'sp_a': 3,
                         'sp_t': 6,
-                        'en': False
                         }
                     )
         h_ed = ct.dlg_proc(self.h, ct.DLG_CTL_HANDLE, index=self.n_edit)
@@ -543,6 +543,7 @@ class DlgSnipMan:
 
 
     def show_add_snip(self):
+        #ct.dlg_proc(self.h, ct.DLG_SCALE)
         ct.dlg_proc(self.h, ct.DLG_SHOW_MODAL)
         ct.dlg_proc(self.h, ct.DLG_FREE)
 
@@ -552,6 +553,11 @@ class DlgSnipMan:
         return self.snippets_changed
 
     def _save_changes(self, *args, **vargs):
+        
+        if self.current_pkg_readonly:
+            ct.dlg_proc(self.h, ct.DLG_HIDE)
+            return
+        
         print(_('Saving changes'))
 
         #pass; print('saving changes: {0}'.format(self.modified))
@@ -645,6 +651,11 @@ class DlgSnipMan:
         ct.dlg_proc(self.h, ct.DLG_HIDE)
 
 
+    def _set_editor_text(self, text):
+        self._enable_ctls(True, self.n_edit)
+        self.ed.set_text_all(text)
+        self._enable_ctls(not self.current_pkg_readonly, self.n_edit)
+
     def _on_snippet_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('snip sel')
         pkg = self._get_sel_pkg()
@@ -656,25 +667,26 @@ class DlgSnipMan:
         if not all((pkg, snips_fn, snip_name, snip)):
             return
 
-        self._enable_ctls(True, self.n_alias, self.n_edit,  self.n_add_snip, self.n_del_snip,
-                                self.n_rename_snip)
+        if not self.current_pkg_readonly:
+            self._enable_ctls(True, self.n_alias, self.n_add_snip, self.n_del_snip,
+                                    self.n_rename_snip)
 
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_alias, prop={
                     'val': snip.get('prefix', ''),
                 })
         body = snip.get('body', [])
         txt = '\n'.join(body)  if type(body) == list else  body
-        self.ed.set_text_all(txt)
+        
+        self._set_editor_text(txt)
 
 
     def _on_group_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('group sel')
 
+        self._set_editor_text('')
         # disable all below 'group'
-        self._enable_ctls(False, self.n_alias, self.n_edit,  self.n_add_snip, self.n_del_snip,
-                                    self.n_rename_snip)
-
-        self.ed.set_text_all('')
+        self._enable_ctls(False, self.n_alias, self.n_add_snip, self.n_del_snip,
+                                    self.n_rename_snip, self.n_add_group, self.n_edit)
 
         pkg = self._get_sel_pkg()
         snips_fn,lexers = self._get_sel_group(pkg)
@@ -690,8 +702,11 @@ class DlgSnipMan:
 
 
         # enable stuff
-        self._enable_ctls(True, self.n_lex, self.n_snippets,
-                            self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip)
+        if not self.current_pkg_readonly:
+            self._enable_ctls(True, self.n_lex, self.n_snippets, self.n_del_pkg,
+                                self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip)
+        else:
+            self._enable_ctls(True, self.n_snippets)
 
         ### fill groups
         # lexers
@@ -728,15 +743,20 @@ class DlgSnipMan:
                         self.n_del_snip, self.n_rename_snip]
         self._enable_ctls(False, self.n_lex, self.n_snippets, self.n_alias, self.n_edit,  *disable_btns)
 
-        self.ed.set_text_all('')
-
         pkg = self._get_sel_pkg()
 
         if pkg is None: # no package selected
             for n in [self.n_groups,  self.n_del_pkg]:
                 ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n, prop={'en': False,})
             self._groups_items = None
+            self._set_editor_text('')
+            self._enable_ctls(False, self.n_edit)
             return
+        
+        _name = pkg['name'].lower()
+        self.current_pkg_readonly = _name.startswith('std.') or _name.startswith('snippets.')
+        self._set_editor_text('')
+        
 
         #pass; print(' * selected pkg: {0}'.format(pkg["name"]))
 
@@ -762,9 +782,12 @@ class DlgSnipMan:
                 })
 
         # if have only one snip file - select it
-        if id_dlg != -1  and len(pkg.get('files', {})) == 1: # -1 - called manually (from fill_forms())
+        file_cnt = len(pkg.get('files', {}))
+        if id_dlg != -1  and file_cnt == 1: # -1 - called manually (from fill_forms())
             ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_groups, prop={'val': 0})
             self._on_group_selected(-1,-1)
+        else:
+            self._enable_ctls(False, self.n_edit)
 
 
     #def _create_snip(self, pkg, snips_fn):
@@ -1031,7 +1054,10 @@ class DlgSnipMan:
     def _enable_ctls(self, enable, *ns):
         prop = {'en':enable, 'val': None, 'items': None,}
         for n in ns:
-            ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n, prop=prop)
+            if n == self.n_edit:
+                 self.ed.set_prop(ct.PROP_RO, not enable)
+            else:
+                 ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n, prop=prop)
 
 
     def _dlg_help(self, *args, **vargs):
