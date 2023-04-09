@@ -1130,7 +1130,7 @@ class DlgSnipMan:
             w, h = 750, 600
             self.h_help = ct.dlg_proc(0, ct.DLG_CREATE)
             ct.dlg_proc(self.h_help, ct.DLG_PROP_SET,
-                        prop={'cap': _('Syntax Help'),
+                        prop={'cap': _('Macros Help'),
                             'w': w,
                             'h': h,
                             'border': ct.DBORDER_SIZE,
