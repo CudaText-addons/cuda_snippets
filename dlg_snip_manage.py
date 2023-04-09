@@ -1135,6 +1135,7 @@ class DlgSnipMan:
                         'align': ct.ALIGN_CLIENT,
                         'val': HELP_TEXT,
                         'sp_a': 6,
+                        'ex0': True, #read-only
                         }
                     )
 
