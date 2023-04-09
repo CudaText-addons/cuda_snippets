@@ -83,6 +83,9 @@ class DlgSnipMan:
     def __init__(self, select_lex=None):
         self.select_lex = select_lex # select first group with this lexer, mark in menus
 
+        self.current_pkg_readonly = False
+        self.last_selected_pkg_grp = None
+        self.last_selected_snippet = None
         self.snippets_changed = False
         self.h_help = None
 
@@ -471,7 +474,6 @@ class DlgSnipMan:
                         'a_b': ('',']'),
                         'sp_a': 3,
                         'sp_t': 6,
-                        'en': False
                         }
                     )
         h_ed = ct.dlg_proc(self.h, ct.DLG_CTL_HANDLE, index=self.n_edit)
@@ -486,7 +488,13 @@ class DlgSnipMan:
         self._fill_forms(init_lex_sel=self.select_lex) # select first group with specified lexer if any
 
 
-    def _fill_forms(self, init_lex_sel=None, sel_pkg_path=None, sel_group=None, sel_snip=None):
+    def _fill_forms(self, init_lex_sel=None, sel_pkg_path=None, sel_group=None, sel_snip=None, reason=''):
+        
+        if reason in ('rename','delete'):
+            # on "rename" or "delete": prevent current prefix/snippet changes from being stashed
+            self.last_selected_snippet = None
+            self.ed.set_prop(ct.PROP_MODIFIED, False)
+        
         # fill packages
         items = [pkg.get('name') for pkg in self.packages]
 
@@ -543,6 +551,7 @@ class DlgSnipMan:
 
 
     def show_add_snip(self):
+        ct.dlg_proc(self.h, ct.DLG_SCALE)
         ct.dlg_proc(self.h, ct.DLG_SHOW_MODAL)
         ct.dlg_proc(self.h, ct.DLG_FREE)
 
@@ -557,40 +566,43 @@ class DlgSnipMan:
         #pass; print('saving changes: {0}'.format(self.modified))
 
         pkg = self._get_sel_pkg()
-        snips_fn,lexers = self._get_sel_group(pkg)
-        snip_name,snip = self._get_sel_snip(pkg, snips_fn)  if lexers is not None else  (None,None)
-
-        _pkg_name = pkg["name"]  if pkg else  "<no_pkg>"
-        #pass; print(' + {} # {}, [{}] # <{}>:<{}>'.format(_pkg_name, snips_fn, lexers, snip_name, snip))
-
-        ### load data from form
-        # check if modified group's lexers
-        if snips_fn is not None and lexers is not None:
-            oldlexes = pkg["files"][snips_fn]
-            p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_lex)
-            newlexs = [lex.strip() for lex in p['val'].split(',') if lex.strip()]
-            if oldlexes != newlexs:
-                print(_('* Group\'s lexers changed: [{0}] => [{1}]').format(oldlexes, newlexs))
-                pkg['files'][snips_fn] = newlexs
-                self.modified.append((TYPE_PKG, pkg['path']))
-
-            # check if modified snippet (alias|body)  (only if group is selected)
-            if snip_name is not None  and snip is not None:
-                oldalias = snip.get('prefix')
-                p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
-                newalias = p['val']
-                if oldalias != newalias:
-                    print(_('* snippet\'s alias changed: [{0}] => [{1}]').format(oldalias, newalias))
-                    snip['prefix'] = newalias
-                    self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
-
-                # check if modified snippet body
-                oldbody = snip['body']
-                newbody = self.ed.get_text_all().split('\n') # line end is always 'lf'
-                if oldbody != newbody:
-                    print(_('* snippet\'s body changed:\n{0}\n ==>>\n{1}').format('\n'.join(oldbody), '\n'.join(newbody)))
-                    snip['body'] = newbody
-                    self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
+        if pkg:
+            snips_fn,lexers = self._get_sel_group(pkg)
+            snip_name,snip = self._get_sel_snip(pkg, snips_fn)  if lexers is not None else  (None,None)
+    
+            #_pkg_name = pkg["name"]  if pkg else  "<no_pkg>"
+            #pass; print(' + {} # {}, [{}] # <{}>:<{}>'.format(_pkg_name, snips_fn, lexers, snip_name, snip))
+    
+            ### load data from form
+            # check if modified group's lexers
+            if snips_fn is not None and lexers is not None:
+                oldlexes = pkg["files"][snips_fn]
+                p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_lex)
+                newlexs = [lex.strip() for lex in p['val'].split(',') if lex.strip()]
+                if oldlexes != newlexs:
+                    print(_('* Group\'s lexers changed: [{0}] => [{1}]').format(oldlexes, newlexs))
+                    pkg['files'][snips_fn] = newlexs
+                    self.modified.append((TYPE_PKG, pkg['path']))
+    
+                # check if modified snippet (alias|body)  (only if group is selected)
+                if snip_name is not None  and snip is not None:
+                    oldalias = snip.get('prefix')
+                    if isinstance(oldalias, list):
+                       oldalias = oldalias[0] # it seems that multiple prefixes are not supported by this plugin
+                    p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
+                    newalias = p['val']
+                    if oldalias != newalias:
+                        print(_('* snippet\'s alias changed: [{0}] => [{1}]').format(oldalias, newalias))
+                        snip['prefix'] = newalias
+                        self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
+    
+                    # check if modified snippet body
+                    oldbody = snip['body']
+                    newbody = self.ed.get_text_all().split('\n') # line end is always 'lf'
+                    if oldbody != newbody:
+                        print(_('* snippet\'s body changed:\n{0}\n ==>>\n{1}').format('\n'.join(oldbody), '\n'.join(newbody)))
+                        snip['body'] = newbody
+                        self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
 
         # save modified
         saved_files = set() # save each file only once
@@ -600,6 +612,8 @@ class DlgSnipMan:
             if mod[0] == TYPE_PKG:
                 type_,package_dir = mod
                 path2pkg = {p['path']:p for p in self.packages  if p['path'] == package_dir}
+                if not path2pkg: # bugfix
+                    continue
                 pkg_copy = {**path2pkg[package_dir]}
                 del pkg_copy['path']
 
@@ -645,36 +659,93 @@ class DlgSnipMan:
         ct.dlg_proc(self.h, ct.DLG_HIDE)
 
 
+    def _set_editor_text(self, text):
+        self._enable_ctls(True, self.n_edit)
+        self.ed.set_text_all(text)
+        self.ed.set_prop(ct.PROP_MODIFIED, False) # mark as not-modified
+        self._enable_ctls(not self.current_pkg_readonly, self.n_edit)
+
+    def _put_unsaved_changes_to_dict(self, also_put_lexers=False):
+        '''
+        if snippet editor is modified we put new changes into `self.file_snippets` dict,
+        essentially remembering them, so they don't get lost while switching to another snippet/package/group.
+        '''
+        
+        if also_put_lexers and self.last_selected_pkg_grp:
+            pkg, snips_fn, oldlexes = self.last_selected_pkg_grp
+            p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_lex)
+            newlexs = [lex.strip() for lex in p['val'].split(',') if lex.strip()]
+            if oldlexes != newlexs:
+                #print("newlexs", newlexs, 'for: ',snips_fn)
+                pkg['files'][snips_fn] = newlexs
+                self.modified.append((TYPE_PKG, pkg['path']))
+        
+        if not self.last_selected_snippet:
+            return
+        pkg, snips_fn, name, snip = self.last_selected_snippet
+        self.last_selected_snippet = None # clear now
+        ed_modified = self.ed.get_prop(ct.PROP_MODIFIED)
+        self.ed.set_prop(ct.PROP_MODIFIED, False) # clear now
+        
+        oldalias = snip.get('prefix')
+        if isinstance(oldalias, list):
+           oldalias = oldalias[0] # it seems that multiple prefixes are not supported by this plugin
+        p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
+        newalias = p['val']
+        
+        #print("ed_modified:{} oldalias:{} newalias:{}".format(ed_modified,oldalias,newalias))
+        if ed_modified or (oldalias != newalias):
+            #print('NOTE: Storing "{}" snippet in dict'.format(name))
+            snip_text = self.ed.get_text_all()
+            
+            snips = self.file_snippets.get((pkg['path'], snips_fn)) # snippets of last selected group will be loaded
+
+            if snips is not None:
+                snips[name] = {'prefix':newalias, 'body':snip_text}
+                self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, name))
+    
     def _on_snippet_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('snip sel')
+        
+        self._put_unsaved_changes_to_dict()
+        
         pkg = self._get_sel_pkg()
         snips_fn,lexers = self._get_sel_group(pkg)
         snip_name,snip = self._get_sel_snip(pkg, snips_fn)
+        
+        self.last_selected_snippet = (pkg, snips_fn, snip_name, snip)
 
         #pass; print(' snip sel:{0}: {1}'.format(snip_name, snip))
 
         if not all((pkg, snips_fn, snip_name, snip)):
             return
 
-        self._enable_ctls(True, self.n_alias, self.n_edit,  self.n_add_snip, self.n_del_snip,
-                                self.n_rename_snip)
+        if not self.current_pkg_readonly:
+            self._enable_ctls(True, self.n_alias, self.n_add_snip, self.n_del_snip,
+                                    self.n_rename_snip)
 
+        prefix = snip.get('prefix', '')
+        if isinstance(prefix, list):
+            prefix = prefix[0] # it seems that multiple prefixes are not supported by this plugin
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_alias, prop={
-                    'val': snip.get('prefix', ''),
+                    'val': prefix,
                 })
         body = snip.get('body', [])
         txt = '\n'.join(body)  if type(body) == list else  body
-        self.ed.set_text_all(txt)
+        
+        self._set_editor_text(txt)
 
 
     def _on_group_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('group sel')
+        
+        called_by_event = id_dlg!=-1
+        self._put_unsaved_changes_to_dict(also_put_lexers=called_by_event) # put_lexers only if called by event
 
+        self._set_editor_text('')
         # disable all below 'group'
-        self._enable_ctls(False, self.n_alias, self.n_edit,  self.n_add_snip, self.n_del_snip,
-                                    self.n_rename_snip)
-
-        self.ed.set_text_all('')
+        self._enable_ctls(False, self.n_alias, self.n_add_snip, self.n_del_snip,
+                                    self.n_rename_snip, self.n_add_group, self.n_edit)
 
         pkg = self._get_sel_pkg()
         snips_fn,lexers = self._get_sel_group(pkg)
@@ -683,6 +754,8 @@ class DlgSnipMan:
 
         if not pkg or not snips_fn:
             return
+            
+        self.last_selected_pkg_grp = pkg, snips_fn, lexers
 
         if self.file_snippets.get((pkg['path'],snips_fn)) is None:
             self._load_package_snippets(pkg['path'])
@@ -690,8 +763,11 @@ class DlgSnipMan:
 
 
         # enable stuff
-        self._enable_ctls(True, self.n_lex, self.n_snippets,
-                            self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip)
+        if not self.current_pkg_readonly:
+            self._enable_ctls(True, self.n_lex, self.n_snippets, self.n_del_pkg,
+                                self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip)
+        else:
+            self._enable_ctls(True, self.n_snippets)
 
         ### fill groups
         # lexers
@@ -723,12 +799,13 @@ class DlgSnipMan:
 
     def _on_package_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('pkg sel')
+        
+        self._put_unsaved_changes_to_dict(also_put_lexers=True)
+        
         # disable all below 'group'
         disable_btns = [self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip,
                         self.n_del_snip, self.n_rename_snip]
         self._enable_ctls(False, self.n_lex, self.n_snippets, self.n_alias, self.n_edit,  *disable_btns)
-
-        self.ed.set_text_all('')
 
         pkg = self._get_sel_pkg()
 
@@ -736,8 +813,15 @@ class DlgSnipMan:
             for n in [self.n_groups,  self.n_del_pkg]:
                 ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n, prop={'en': False,})
             self._groups_items = None
+            self._set_editor_text('')
+            self._enable_ctls(False, self.n_edit)
+            self.last_selected_pkg_grp = None
             return
-
+        
+        _name = pkg['name'].lower()
+        self.current_pkg_readonly = _name.startswith('std.') or _name.startswith('snippets.')
+        self._set_editor_text('')
+        
         #pass; print(' * selected pkg: {0}'.format(pkg["name"]))
 
         # fill groups
@@ -762,9 +846,13 @@ class DlgSnipMan:
                 })
 
         # if have only one snip file - select it
-        if id_dlg != -1  and len(pkg.get('files', {})) == 1: # -1 - called manually (from fill_forms())
+        file_cnt = len(pkg.get('files', {}))
+        if id_dlg != -1  and file_cnt == 1: # -1 - called manually (from fill_forms())
             ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_groups, prop={'val': 0})
             self._on_group_selected(-1,-1)
+        else:
+            self._enable_ctls(False, self.n_edit)
+            self.last_selected_pkg_grp = None
 
 
     #def _create_snip(self, pkg, snips_fn):
@@ -855,7 +943,7 @@ class DlgSnipMan:
         if res is not None: # removeing
             #pass; print('* confirmed package deletion')
             self.packages.remove(pkg)
-            self._fill_forms()
+            self._fill_forms(reason='delete')
 
     def _dlg_del_group(self, *args, **vargs):
         ''' show group file to delete with OK|Cancel
@@ -875,7 +963,7 @@ class DlgSnipMan:
                 #pass; print('* confirmed group deletion')
                 del pkg['files'][snips_fn]
                 self.modified.append((TYPE_PKG, pkg['path'])) # package config is modified
-                self._fill_forms(sel_pkg_path=pkg['path'])
+                self._fill_forms(sel_pkg_path=pkg['path'], reason='delete')
 
 
     def _menu_add_lex(self, *args, lex=None, **vargs):
@@ -911,7 +999,7 @@ class DlgSnipMan:
                 if snip_name in snips: # removing from snips dict
                     del snips[snip_name]
                     self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
-                    self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn)
+                    self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn, reason='delete')
 
 
     def _dlg_rename_snip(self, *args, **vargs):
@@ -933,7 +1021,7 @@ class DlgSnipMan:
                 _p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
                 ui_alias = _p['val']
                 ui_body = self.ed.get_text_all()
-                self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn, sel_snip=name)
+                self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn, sel_snip=name, reason='rename')
                 # restore values
                 ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_alias, prop={'val': ui_alias})
                 self.ed.set_text_all(ui_body)
@@ -1031,7 +1119,10 @@ class DlgSnipMan:
     def _enable_ctls(self, enable, *ns):
         prop = {'en':enable, 'val': None, 'items': None,}
         for n in ns:
-            ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n, prop=prop)
+            if n == self.n_edit:
+                 self.ed.set_prop(ct.PROP_RO, not enable)
+            else:
+                 ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n, prop=prop)
 
 
     def _dlg_help(self, *args, **vargs):
