@@ -565,42 +565,43 @@ class DlgSnipMan:
         #pass; print('saving changes: {0}'.format(self.modified))
 
         pkg = self._get_sel_pkg()
-        snips_fn,lexers = self._get_sel_group(pkg)
-        snip_name,snip = self._get_sel_snip(pkg, snips_fn)  if lexers is not None else  (None,None)
-
-        _pkg_name = pkg["name"]  if pkg else  "<no_pkg>"
-        #pass; print(' + {} # {}, [{}] # <{}>:<{}>'.format(_pkg_name, snips_fn, lexers, snip_name, snip))
-
-        ### load data from form
-        # check if modified group's lexers
-        if snips_fn is not None and lexers is not None:
-            oldlexes = pkg["files"][snips_fn]
-            p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_lex)
-            newlexs = [lex.strip() for lex in p['val'].split(',') if lex.strip()]
-            if oldlexes != newlexs:
-                print(_('* Group\'s lexers changed: [{0}] => [{1}]').format(oldlexes, newlexs))
-                pkg['files'][snips_fn] = newlexs
-                self.modified.append((TYPE_PKG, pkg['path']))
-
-            # check if modified snippet (alias|body)  (only if group is selected)
-            if snip_name is not None  and snip is not None:
-                oldalias = snip.get('prefix')
-                if isinstance(oldalias, list):
-                   oldalias = oldalias[0] # it seems that multiple prefixes are not supported by this plugin
-                p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
-                newalias = p['val']
-                if oldalias != newalias:
-                    print(_('* snippet\'s alias changed: [{0}] => [{1}]').format(oldalias, newalias))
-                    snip['prefix'] = newalias
-                    self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
-
-                # check if modified snippet body
-                oldbody = snip['body']
-                newbody = self.ed.get_text_all().split('\n') # line end is always 'lf'
-                if oldbody != newbody:
-                    print(_('* snippet\'s body changed:\n{0}\n ==>>\n{1}').format('\n'.join(oldbody), '\n'.join(newbody)))
-                    snip['body'] = newbody
-                    self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
+        if pkg:
+            snips_fn,lexers = self._get_sel_group(pkg)
+            snip_name,snip = self._get_sel_snip(pkg, snips_fn)  if lexers is not None else  (None,None)
+    
+            #_pkg_name = pkg["name"]  if pkg else  "<no_pkg>"
+            #pass; print(' + {} # {}, [{}] # <{}>:<{}>'.format(_pkg_name, snips_fn, lexers, snip_name, snip))
+    
+            ### load data from form
+            # check if modified group's lexers
+            if snips_fn is not None and lexers is not None:
+                oldlexes = pkg["files"][snips_fn]
+                p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_lex)
+                newlexs = [lex.strip() for lex in p['val'].split(',') if lex.strip()]
+                if oldlexes != newlexs:
+                    print(_('* Group\'s lexers changed: [{0}] => [{1}]').format(oldlexes, newlexs))
+                    pkg['files'][snips_fn] = newlexs
+                    self.modified.append((TYPE_PKG, pkg['path']))
+    
+                # check if modified snippet (alias|body)  (only if group is selected)
+                if snip_name is not None  and snip is not None:
+                    oldalias = snip.get('prefix')
+                    if isinstance(oldalias, list):
+                       oldalias = oldalias[0] # it seems that multiple prefixes are not supported by this plugin
+                    p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
+                    newalias = p['val']
+                    if oldalias != newalias:
+                        print(_('* snippet\'s alias changed: [{0}] => [{1}]').format(oldalias, newalias))
+                        snip['prefix'] = newalias
+                        self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
+    
+                    # check if modified snippet body
+                    oldbody = snip['body']
+                    newbody = self.ed.get_text_all().split('\n') # line end is always 'lf'
+                    if oldbody != newbody:
+                        print(_('* snippet\'s body changed:\n{0}\n ==>>\n{1}').format('\n'.join(oldbody), '\n'.join(newbody)))
+                        snip['body'] = newbody
+                        self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
 
         # save modified
         saved_files = set() # save each file only once
