@@ -84,6 +84,7 @@ class DlgSnipMan:
         self.select_lex = select_lex # select first group with this lexer, mark in menus
 
         self.current_pkg_readonly = False
+        self.last_selected_snippet = None
         self.snippets_changed = False
         self.h_help = None
 
@@ -486,7 +487,13 @@ class DlgSnipMan:
         self._fill_forms(init_lex_sel=self.select_lex) # select first group with specified lexer if any
 
 
-    def _fill_forms(self, init_lex_sel=None, sel_pkg_path=None, sel_group=None, sel_snip=None):
+    def _fill_forms(self, init_lex_sel=None, sel_pkg_path=None, sel_group=None, sel_snip=None, reason=''):
+        
+        if reason in ('rename','delete'):
+            # on "rename" or "delete": prevent current changes from being stashed
+            self.last_selected_snippet = None
+            self.ed.set_prop(ct.PROP_MODIFIED, False)
+        
         # fill packages
         items = [pkg.get('name') for pkg in self.packages]
 
@@ -553,11 +560,6 @@ class DlgSnipMan:
         return self.snippets_changed
 
     def _save_changes(self, *args, **vargs):
-        
-        if self.current_pkg_readonly:
-            ct.dlg_proc(self.h, ct.DLG_HIDE)
-            return
-        
         print(_('Saving changes'))
 
         #pass; print('saving changes: {0}'.format(self.modified))
@@ -583,6 +585,8 @@ class DlgSnipMan:
             # check if modified snippet (alias|body)  (only if group is selected)
             if snip_name is not None  and snip is not None:
                 oldalias = snip.get('prefix')
+                if isinstance(oldalias, list):
+                   oldalias = oldalias[0] # it seems that multiple prefixes are not supported by this plugin
                 p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
                 newalias = p['val']
                 if oldalias != newalias:
@@ -654,13 +658,49 @@ class DlgSnipMan:
     def _set_editor_text(self, text):
         self._enable_ctls(True, self.n_edit)
         self.ed.set_text_all(text)
+        self.ed.set_prop(ct.PROP_MODIFIED, False) # mark as not-modified
         self._enable_ctls(not self.current_pkg_readonly, self.n_edit)
 
+    def _put_last_selected_snippet_to_dict(self):
+        '''
+        if snippet editor is modified we put new changes into `self.file_snippets` dict,
+        essentially remembering them, so they don't get lost while switching to another snippet/package/group.
+        '''
+        
+        if not self.last_selected_snippet:
+            return
+        pkg, snips_fn, name, snip = self.last_selected_snippet
+        self.last_selected_snippet = None # clear now
+        ed_modified = self.ed.get_prop(ct.PROP_MODIFIED)
+        self.ed.set_prop(ct.PROP_MODIFIED, False) # clear now
+        
+        oldalias = snip.get('prefix')
+        if isinstance(oldalias, list):
+           oldalias = oldalias[0] # it seems that multiple prefixes are not supported by this plugin
+        p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
+        newalias = p['val']
+        
+        #print("ed_modified:{} oldalias:{} newalias:{}".format(ed_modified,oldalias,newalias))
+        if ed_modified or (oldalias != newalias):
+            #print('NOTE: Storing "{}" snippet in dict'.format(name))
+            snip_text = self.ed.get_text_all()
+            
+            snips = self.file_snippets.get((pkg['path'], snips_fn)) # snippets of last selected group will be loaded
+
+            if snips is not None:
+                snips[name] = {'prefix':newalias, 'body':snip_text}
+                self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, name))
+    
     def _on_snippet_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('snip sel')
+        
+        self._put_last_selected_snippet_to_dict()
+        
         pkg = self._get_sel_pkg()
         snips_fn,lexers = self._get_sel_group(pkg)
         snip_name,snip = self._get_sel_snip(pkg, snips_fn)
+        
+        self.last_selected_snippet = (pkg, snips_fn, snip_name, snip)
 
         #pass; print(' snip sel:{0}: {1}'.format(snip_name, snip))
 
@@ -671,8 +711,11 @@ class DlgSnipMan:
             self._enable_ctls(True, self.n_alias, self.n_add_snip, self.n_del_snip,
                                     self.n_rename_snip)
 
+        prefix = snip.get('prefix', '')
+        if isinstance(prefix, list):
+            prefix = prefix[0] # it seems that multiple prefixes are not supported by this plugin
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_alias, prop={
-                    'val': snip.get('prefix', ''),
+                    'val': prefix,
                 })
         body = snip.get('body', [])
         txt = '\n'.join(body)  if type(body) == list else  body
@@ -682,6 +725,8 @@ class DlgSnipMan:
 
     def _on_group_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('group sel')
+        
+        self._put_last_selected_snippet_to_dict()
 
         self._set_editor_text('')
         # disable all below 'group'
@@ -738,6 +783,9 @@ class DlgSnipMan:
 
     def _on_package_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('pkg sel')
+        
+        self._put_last_selected_snippet_to_dict()
+        
         # disable all below 'group'
         disable_btns = [self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip,
                         self.n_del_snip, self.n_rename_snip]
@@ -878,7 +926,7 @@ class DlgSnipMan:
         if res is not None: # removeing
             #pass; print('* confirmed package deletion')
             self.packages.remove(pkg)
-            self._fill_forms()
+            self._fill_forms(reason='delete')
 
     def _dlg_del_group(self, *args, **vargs):
         ''' show group file to delete with OK|Cancel
@@ -898,7 +946,7 @@ class DlgSnipMan:
                 #pass; print('* confirmed group deletion')
                 del pkg['files'][snips_fn]
                 self.modified.append((TYPE_PKG, pkg['path'])) # package config is modified
-                self._fill_forms(sel_pkg_path=pkg['path'])
+                self._fill_forms(sel_pkg_path=pkg['path'], reason='delete')
 
 
     def _menu_add_lex(self, *args, lex=None, **vargs):
@@ -934,7 +982,7 @@ class DlgSnipMan:
                 if snip_name in snips: # removing from snips dict
                     del snips[snip_name]
                     self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
-                    self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn)
+                    self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn, reason='delete')
 
 
     def _dlg_rename_snip(self, *args, **vargs):
@@ -956,7 +1004,7 @@ class DlgSnipMan:
                 _p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
                 ui_alias = _p['val']
                 ui_body = self.ed.get_text_all()
-                self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn, sel_snip=name)
+                self._fill_forms(sel_pkg_path=pkg['path'], sel_group=snips_fn, sel_snip=name, reason='rename')
                 # restore values
                 ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_alias, prop={'val': ui_alias})
                 self.ed.set_text_all(ui_body)
