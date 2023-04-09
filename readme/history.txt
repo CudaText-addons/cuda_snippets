@@ -1,3 +1,12 @@
+2023.04.09
+patches by @veksha
++ add: read-only support for "std." and "snippets." packages
++ add: added DLG_SCALE call (form and controls will be bigger if scaling is configured)
++ add: user can now edit snippet after snippet without fear to lose changes
++ add: user can now edit lexers for different groups without fear to lose changes
+- fix: error on deleting of package
+- fix: lexers field reset on "add snippet" action
+
 2023.04.07
 * change: menu-dialog disables filtering by lexer-name
 - fix: if selection had the caret on the right, ${sel} macro expanded with wrong indent (thanks @veksha)
