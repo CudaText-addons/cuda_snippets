@@ -2,38 +2,21 @@ Plugin for CudaText.
 Snippets engine, which is described in CudaText wiki:
 https://wiki.freepascal.org/CudaText_plugins#Snippets
 
-Now plugin also supports snippets from VS Code.
-It gives the command to install snippets from VS Code repositories.
-This big rework was done by @OlehL.
-This includes support of TextMate snippet macros:
+Important notice:
+For your own snippets it is better to create custom snippet package. Because if you modify
+standard packages and reinstall them, your changes will be lost. That is why editing controls
+are disabled for packages whose names start with "std." or "snippets."
 
-- TM_SELECTED_TEXT
-- TM_CURRENT_LINE
-- TM_CURRENT_WORD
-- TM_LINE_INDEX
-- TM_LINE_NUMBER
-- TM_FILEPATH
-- TM_DIRECTORY
-- TM_FILENAME
-- TM_FILENAME_BASE
-- CLIPBOARD
-- WORKSPACE_NAME
-- CURRENT_YEAR
-- CURRENT_YEAR_SHORT
-- CURRENT_MONTH
-- CURRENT_MONTH_NAME
-- CURRENT_MONTH_NAME_SHORT
-- CURRENT_DATE
-- CURRENT_DAY_NAME
-- CURRENT_DAY_NAME_SHORT
-- CURRENT_HOUR
-- CURRENT_MINUTE
-- CURRENT_SECOND
-- CURRENT_SECONDS_UNIX
-- BLOCK_COMMENT_START
-- BLOCK_COMMENT_END
-- LINE_COMMENT
+Snippet folders:
 
+1. CudaText snippets.
+  These are packages with prefix "snippets_ct" in the Addons Manager.
+  They are installed into folder [CudaText]/data/snippets_ct.
+2. VSCode snippets.
+  These are VSCode packages located in the VSCode repositories.
+  They are installed to folder [CudaText]/data/snippets_vs.
+  VSCode format support was big work done by @OlehL.
+  
 Authors:
   Alexey Torgashin (CudaText)
   Oleh Lutsak ( https://github.com/OlehL/ )
