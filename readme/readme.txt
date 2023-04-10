@@ -7,7 +7,7 @@ For your own snippets it is better to create custom snippet package. Because if 
 standard packages and reinstall them, your changes will be lost. That is why editing controls
 are disabled for packages whose names start with "std." or "snippets."
 
-Snippet folders:
+Snippet folders (format of data is the same, VSCode JSON format):
 
 1. CudaText snippets.
   These are packages with prefix "snippets_ct" in the Addons Manager.
