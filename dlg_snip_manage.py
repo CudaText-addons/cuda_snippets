@@ -783,10 +783,16 @@ class DlgSnipMan:
         if lexers:
             ed_lex = self.ed.get_prop(ct.PROP_LEXER_FILE)
             if not ed_lex  or ed_lex not in lexers: # dont change if current editor lex is in group
-                app_lexs = ct.lexer_proc(ct.LEXER_GET_LEXERS, '')
+                app_lexs = set(ct.lexer_proc(ct.LEXER_GET_LEXERS, ''))
+                # ignore several lexers
+                app_lexs.discard('Markdown')
+                app_lexs.discard('reStructuredText')
+                app_lexs.discard('Textile')
+                app_lexs.discard('MediaWiki')
                 for lex in lexers:
                     if lex in app_lexs:
                         self.ed.set_prop(ct.PROP_LEXER_FILE, lex)
+                        break
 
 
     def _on_package_selected(self, id_dlg, id_ctl, data='', info=''):
