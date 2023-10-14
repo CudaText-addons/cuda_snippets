@@ -484,12 +484,12 @@ class DlgSnipMan:
 
 
     def _fill_forms(self, init_lex_sel=None, sel_pkg_path=None, sel_group=None, sel_snip=None, reason=''):
-        
+
         if reason in ('rename','delete'):
             # on "rename" or "delete": prevent current prefix/snippet changes from being stashed
             self.last_selected_snippet = None
             self.ed.set_prop(ct.PROP_MODIFIED, False)
-        
+
         # fill packages
         items = [pkg.get('name') for pkg in self.packages]
 
@@ -561,10 +561,10 @@ class DlgSnipMan:
         if pkg:
             snips_fn,lexers = self._get_sel_group(pkg)
             snip_name,snip = self._get_sel_snip(pkg, snips_fn)  if lexers is not None else  (None,None)
-    
+
             #_pkg_name = pkg["name"]  if pkg else  "<no_pkg>"
             #pass; print(' + {} # {}, [{}] # <{}>:<{}>'.format(_pkg_name, snips_fn, lexers, snip_name, snip))
-    
+
             ### load data from form
             # check if modified group's lexers
             if snips_fn is not None and lexers is not None:
@@ -575,7 +575,7 @@ class DlgSnipMan:
                     print(_('* Group\'s lexers changed: [{0}] => [{1}]').format(oldlexes, newlexs))
                     pkg['files'][snips_fn] = newlexs
                     self.modified.append((TYPE_PKG, pkg['path']))
-    
+
                 # check if modified snippet (alias|body)  (only if group is selected)
                 if snip_name is not None  and snip is not None:
                     oldalias = snip.get('prefix')
@@ -587,7 +587,7 @@ class DlgSnipMan:
                         print(_('* snippet\'s alias changed: [{0}] => [{1}]').format(oldalias, newalias))
                         snip['prefix'] = newalias
                         self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
-    
+
                     # check if modified snippet body
                     oldbody = snip['body']
                     newbody = self.ed.get_text_all().split('\n') # line end is always 'lf'
@@ -662,7 +662,7 @@ class DlgSnipMan:
         if snippet editor is modified we put new changes into `self.file_snippets` dict,
         essentially remembering them, so they don't get lost while switching to another snippet/package/group.
         '''
-        
+
         if also_put_lexers and self.last_selected_pkg_grp:
             pkg, snips_fn, oldlexes = self.last_selected_pkg_grp
             p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_lex)
@@ -671,40 +671,40 @@ class DlgSnipMan:
                 #print("newlexs", newlexs, 'for: ',snips_fn)
                 pkg['files'][snips_fn] = newlexs
                 self.modified.append((TYPE_PKG, pkg['path']))
-        
+
         if not self.last_selected_snippet:
             return
         pkg, snips_fn, name, snip = self.last_selected_snippet
         self.last_selected_snippet = None # clear now
         ed_modified = self.ed.get_prop(ct.PROP_MODIFIED)
         self.ed.set_prop(ct.PROP_MODIFIED, False) # clear now
-        
+
         oldalias = snip.get('prefix')
         if isinstance(oldalias, list):
            oldalias = oldalias[0] # it seems that multiple prefixes are not supported by this plugin
         p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
         newalias = p['val']
-        
+
         #print("ed_modified:{} oldalias:{} newalias:{}".format(ed_modified,oldalias,newalias))
         if ed_modified or (oldalias != newalias):
             #print('NOTE: Storing "{}" snippet in dict'.format(name))
             snip_text = self.ed.get_text_all()
-            
+
             snips = self.file_snippets.get((pkg['path'], snips_fn)) # snippets of last selected group will be loaded
 
             if snips is not None:
                 snips[name] = {'prefix':newalias, 'body':snip_text}
                 self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, name))
-    
+
     def _on_snippet_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('snip sel')
-        
+
         self._put_unsaved_changes_to_dict()
-        
+
         pkg = self._get_sel_pkg()
         snips_fn,lexers = self._get_sel_group(pkg)
         snip_name,snip = self._get_sel_snip(pkg, snips_fn)
-        
+
         self.last_selected_snippet = (pkg, snips_fn, snip_name, snip)
 
         #pass; print(' snip sel:{0}: {1}'.format(snip_name, snip))
@@ -724,13 +724,13 @@ class DlgSnipMan:
                 })
         body = snip.get('body', [])
         txt = '\n'.join(body)  if type(body) == list else  body
-        
+
         self._set_editor_text(txt)
 
 
     def _on_group_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('group sel')
-        
+
         called_by_event = id_dlg!=-1
         self._put_unsaved_changes_to_dict(also_put_lexers=called_by_event) # put_lexers only if called by event
 
@@ -746,7 +746,7 @@ class DlgSnipMan:
 
         if not pkg or not snips_fn:
             return
-            
+
         self.last_selected_pkg_grp = pkg, snips_fn, lexers
 
         if self.file_snippets.get((pkg['path'],snips_fn)) is None:
@@ -773,7 +773,7 @@ class DlgSnipMan:
         snip_items.sort()
         self.snip_items = [*snip_items]
 
-        snip_items = '\t'.join(snip_items)
+        snip_items = '\t'.join(snip_items).splitlines()
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_snippets, prop={
                     'val': None, # selected item
                     'items': snip_items,
@@ -797,9 +797,9 @@ class DlgSnipMan:
 
     def _on_package_selected(self, id_dlg, id_ctl, data='', info=''):
         #pass; print('pkg sel')
-        
+
         self._put_unsaved_changes_to_dict(also_put_lexers=True)
-        
+
         # disable all below 'group'
         disable_btns = [self.n_add_group, self.n_del_group, self.n_add_lex, self.n_add_snip,
                         self.n_del_snip, self.n_rename_snip]
@@ -815,11 +815,11 @@ class DlgSnipMan:
             self._enable_ctls(False, self.n_edit)
             self.last_selected_pkg_grp = None
             return
-        
+
         _name = pkg['name'].lower()
         self.current_pkg_readonly = _name.startswith('std.') or _name.startswith('snippets.')
         self._set_editor_text('')
-        
+
         #pass; print(' * selected pkg: {0}'.format(pkg["name"]))
 
         # fill groups
