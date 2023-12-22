@@ -1,3 +1,6 @@
+2023.12.22
+- fix: adapt for changed menu_proc API
+
 2023.04.09
 patches by @veksha
 + add: read-only support for "std." and "snippets." packages
