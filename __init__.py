@@ -128,7 +128,7 @@ class Command:
         ct.ed.markers(ct.MARKERS_DELETE_ALL)
 
     def add_menu_items(self):
-        if 'cuda_snippets' in [i['tag'] for i in ct.menu_proc('text', ct.MENU_ENUM)]:
+        if 'cuda_snippets' in [i.get('tag', '') for i in ct.menu_proc('text', ct.MENU_ENUM)]:
             return
 
         ct.menu_proc("text", ct.MENU_ADD,
