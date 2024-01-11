@@ -33,7 +33,10 @@ class Command:
 
     @property
     def lexer(self):
-        return ct.ed.get_prop(ct.PROP_LEXER_CARET)
+        lex = ct.ed.get_prop(ct.PROP_LEXER_CARET)
+        if lex == '':
+            lex = '(none)'
+        return lex
 
     @property
     def lex_snippets(self):

@@ -966,7 +966,7 @@ class DlgSnipMan:
 
     def _menu_add_lex(self, *args, lex=None, **vargs):
         if lex is None: # initial call: show menu
-            lexs = ct.lexer_proc(ct.LEXER_GET_LEXERS, '')
+            lexs = ['(none)'] + ct.lexer_proc(ct.LEXER_GET_LEXERS, '')
 
             h_menu = ct.menu_proc(0, ct.MENU_CREATE)
             for lex in lexs:
