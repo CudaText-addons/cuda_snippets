@@ -1046,7 +1046,17 @@ class DlgSnipMan:
                         else:
                             json_data += line.rstrip('\n')
                         
-                snips = json.loads(json_data)
+                try:
+                    snips = json.loads(json_data)
+                except json.JSONDecodeError as e:
+                    if 'utf-8-sig' in str(e):
+                        snips_decoded = json_data.encode('utf-8').decode('utf-8-sig')
+                        snips = json.loads(snips_decoded)
+                        # update file with UTF-8 without BOM. because snippet.py cannot work with BOM yet.
+                        with open(snips_path, 'w', encoding='utf-8') as f:
+                            f.write(snips_decoded)
+                    else:
+                        raise
                 #pass; print(' * loaded snips:{0}'.format(len(snips)))
 
                 self.file_snippets[(package_path,snips_fn)] = snips
