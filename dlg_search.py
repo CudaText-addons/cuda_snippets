@@ -98,7 +98,7 @@ class DlgSearch:
                           'h': h,
                           'border': ct.DBORDER_SIZE,
                           "keypreview": True,
-                          'on_key_up': self.press_key,
+                          'on_key_down': self.press_key,
                           }
                     )
 
@@ -150,10 +150,10 @@ class DlgSearch:
         self.memo = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'memo')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.memo,
                     prop={
-                        'name': 'ls',
+                        'name': 'desc',
                         'h': 60,
                         'ex0': True,
-                        'ex1': True,
+                        #'ex1': True, # monospaced
                         'p': 'g2',
                         'align': ct.ALIGN_BOTTOM,
                         'sp_l': 5,
@@ -171,7 +171,10 @@ class DlgSearch:
                         'a_l': None,
                         'a_r': ('g1', ']'),
                         'a_t': ('g1', '['),
-                        'sp_a': 5,
+                        'a_b': ('g1', ']'),
+                        'sp_l': 5,
+                        'sp_r': 5,
+                        'sp_t': 5,
                         'p': 'g1',
                         'cap': '=',
                         'tab_stop': False,
@@ -186,7 +189,10 @@ class DlgSearch:
                         'a_l': ('g1', '['),
                         'a_r': ('b', '['),
                         'a_t': ('g1', '['),
-                        'sp_a': 5,
+                        'a_b': ('g1', ']'),
+                        'sp_l': 5,
+                        'sp_r': 5,
+                        'sp_t': 5,
                         'p': 'g1',
                         'tab_order': 0,
                          }
@@ -249,6 +255,9 @@ class DlgSearch:
         self.search()
 
     def show(self):
+        ct.dlg_proc(self.h, ct.DLG_SCALE)
+        self.set_focus(self.edit) # so Enter key will not trigger install() accidentally
+        
         self.data = None
         self.search()
         # set last dlg size
@@ -272,19 +281,20 @@ class DlgSearch:
         return self.data
 
     def press_key(self, id_dlg, id_ctl, data='', info=''):
+        # Enter
         if id_ctl == 13:
             if self.is_focused(self.edit):
                 self.search()
             elif self.is_focused(self.ls) and self.item_index >= 0:
                 self.install()
-        elif id_ctl == 40 and not self.is_focused(self.ls):
+        # PgDn,PgUp,Up,Down
+        elif (id_ctl in (33,34,38,40)) and not self.is_focused(self.ls):
             self.set_focus(self.ls)
-            self.item_index += 1
             self.load_description()
-        elif id_ctl == 38 and self.item_index == 0:
-            self.set_focus(self.edit)
+            return True if id_ctl in (33,34) else False # let PgDn/PgUp through
         elif self.is_focused(self.edit):
             self.search()
+            
 
     def is_focused(self, ctl):
         return ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=ctl)['focused']
@@ -309,8 +319,9 @@ class DlgSearch:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.ls, prop={'items': items})
 
     def load_description(self, *args, **kwargs):
-        descr = self.exts[self.item_index]['description']
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.memo, prop={'val': descr})
+        if self.item_index >= 0:
+            descr = self.exts[self.item_index]['description']
+            ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.memo, prop={'val': descr})
 
     def install(self, *args, **kwargs):
         ext = self.exts[self.item_index]
@@ -321,6 +332,13 @@ class DlgSearch:
         if not self.data:
             return
 
+    @staticmethod
+    def timer_func(original_func):
+        def inner_func(self, *args, **kwargs):
+            ct.timer_proc(ct.TIMER_START_ONE, lambda *args, **kwargs: original_func(self, *args, **kwargs), 50)
+        return inner_func
+    
+    @timer_func # timer is needed here, otherwise self.text will be old (previous value)
     def search(self, *args, **kwargs):
         """Find extensions."""
         name = self.text
@@ -330,7 +348,7 @@ class DlgSearch:
         else:
             self.last_text = name
 
-        if name:
+        if name is not None:
             name = name.lower()
             self.exts = []
             if self.is_whole_word_search:
@@ -342,6 +360,11 @@ class DlgSearch:
                     search_engine = simple_search
 
             for i in self.vs_exts:
+                if name.strip() == '': # if filter is empty -> append all
+                    i['rating'] = 0
+                    self.exts.append(i)
+                    continue
+                
                 if self.is_search_in_descriptions:
                     text = i['description'].lower()
                 else:
@@ -351,10 +374,14 @@ class DlgSearch:
                 if fz > 0:
                     self.exts.append(i)
 
-            self.exts.sort(key=lambda x: x['rating'], reverse=True)
+            if name.strip() == '': # if filter is empty -> sort by name
+                self.exts.sort(key=lambda x: x['display_name'], reverse=False)
+            else:
+                self.exts.sort(key=lambda x: x['rating'], reverse=True)
 
         items = [' '.join([e['display_name'], e['version']]) for e in self.exts]
         self.set_items(items)
+        self.item_index = 0 # always select first item after filtering
 
 
 if __name__ == '__main__':
