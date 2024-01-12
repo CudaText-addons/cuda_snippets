@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import datetime
 import cudatext as ct
 from cuda_snippets import vs
@@ -1035,8 +1036,17 @@ class DlgSnipMan:
                     print(_('! ERROR: snippets path is not a file:{0}').format(snips_path))
                     continue
 
+                json_data = ''
                 with open(snips_path, 'r', encoding='utf-8') as f:
-                    snips = json.load(f)
+                    for line in f:
+                        # Check if the line has comment
+                        m = re.match(r'(.*)//.*', line)
+                        if m:
+                            json_data += m.group(1).rstrip('\n')
+                        else:
+                            json_data += line.rstrip('\n')
+                        
+                snips = json.loads(json_data)
                 #pass; print(' * loaded snips:{0}'.format(len(snips)))
 
                 self.file_snippets[(package_path,snips_fn)] = snips
