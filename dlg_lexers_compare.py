@@ -10,7 +10,7 @@ class DlgLexersCompare:
     def __init__(self, data=None):
         self.data = data
         self.items = list(self.data.get('files', {}).keys())
-        self.lexers = ct.lexer_proc(ct.LEXER_GET_LEXERS, True)
+        self.lexers = ['(none)'] + ct.lexer_proc(ct.LEXER_GET_LEXERS, True)
         self.state = {k: '-1;' + ','*len(self.lexers) for k in self.items}
 
         w, h = 600, 400
