@@ -10,7 +10,7 @@ class DlgLexersCompare:
     def __init__(self, data=None):
         self.data = data
         self.items = list(self.data.get('files', {}).keys())
-        self.lexers = ct.lexer_proc(ct.LEXER_GET_LEXERS, True)
+        self.lexers = ['(none)'] + ct.lexer_proc(ct.LEXER_GET_LEXERS, True)
         self.state = {k: '-1;' + ','*len(self.lexers) for k in self.items}
 
         w, h = 600, 400
@@ -123,6 +123,7 @@ class DlgLexersCompare:
         ct.dlg_proc(self.h, ct.DLG_HIDE)
 
     def show(self):
+        ct.dlg_proc(self.h, ct.DLG_SCALE)
         ct.dlg_proc(self.h, ct.DLG_SHOW_MODAL)
         ct.dlg_proc(self.h, ct.DLG_FREE)
 

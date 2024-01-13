@@ -1,10 +1,11 @@
 import os
 import json
+import re
 import datetime
 import cudatext as ct
 from cuda_snippets import vs
 
-from cudax_lib import get_translation
+from cudax_lib import get_translation, _json_loads
 _   = get_translation(__file__)  # I18N
 
 DATA_DIR = ct.app_path(ct.APP_DIR_DATA)
@@ -966,7 +967,7 @@ class DlgSnipMan:
 
     def _menu_add_lex(self, *args, lex=None, **vargs):
         if lex is None: # initial call: show menu
-            lexs = ct.lexer_proc(ct.LEXER_GET_LEXERS, '')
+            lexs = ['(none)'] + ct.lexer_proc(ct.LEXER_GET_LEXERS, '')
 
             h_menu = ct.menu_proc(0, ct.MENU_CREATE)
             for lex in lexs:
@@ -1035,8 +1036,11 @@ class DlgSnipMan:
                     print(_('! ERROR: snippets path is not a file:{0}').format(snips_path))
                     continue
 
+                json_data = ''
                 with open(snips_path, 'r', encoding='utf-8') as f:
-                    snips = json.load(f)
+                    json_data = f.read()
+                        
+                snips = _json_loads(json_data)
                 #pass; print(' * loaded snips:{0}'.format(len(snips)))
 
                 self.file_snippets[(package_path,snips_fn)] = snips

@@ -55,7 +55,7 @@ def make_exts_list(src):
                     break
         ext = {
             'name': e.get("extensionName", '-'),
-            'display_name': e.get("displayName", '-'),
+            'display_name': e.get("displayName", '-').strip(),
             'description': e.get("shortDescription", ''),
             'version': e.get("versions", [{}])[0].get("version", ''),
             'url': _url,
