@@ -332,7 +332,6 @@ class DlgSearch:
         if not self.data:
             return
 
-    @staticmethod
     def timer_func(original_func):
         def inner_func(self, *args, **kwargs):
             ct.timer_proc(ct.TIMER_START_ONE, lambda *args, **kwargs: original_func(self, *args, **kwargs), 50)
