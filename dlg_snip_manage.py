@@ -5,7 +5,7 @@ import datetime
 import cudatext as ct
 from cuda_snippets import vs
 
-from cudax_lib import get_translation
+from cudax_lib import get_translation, _json_loads
 _   = get_translation(__file__)  # I18N
 
 DATA_DIR = ct.app_path(ct.APP_DIR_DATA)
@@ -1038,25 +1038,9 @@ class DlgSnipMan:
 
                 json_data = ''
                 with open(snips_path, 'r', encoding='utf-8') as f:
-                    for line in f:
-                        # Check if the line has comment
-                        m = re.match(r'(.*)//.*', line)
-                        if m:
-                            json_data += m.group(1).rstrip('\n')
-                        else:
-                            json_data += line.rstrip('\n')
+                    json_data = f.read()
                         
-                try:
-                    snips = json.loads(json_data)
-                except json.JSONDecodeError as e:
-                    if 'utf-8-sig' in str(e):
-                        snips_decoded = json_data.encode('utf-8').decode('utf-8-sig')
-                        snips = json.loads(snips_decoded)
-                        # update file with UTF-8 without BOM. because snippet.py cannot work with BOM yet.
-                        with open(snips_path, 'w', encoding='utf-8') as f:
-                            f.write(snips_decoded)
-                    else:
-                        raise
+                snips = _json_loads(json_data)
                 #pass; print(' * loaded snips:{0}'.format(len(snips)))
 
                 self.file_snippets[(package_path,snips_fn)] = snips
