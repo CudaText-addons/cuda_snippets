@@ -4,8 +4,9 @@ import re
 import datetime
 import cudatext as ct
 from cuda_snippets import vs
+from cuda_snippets.snip.utils import load_json
 
-from cudax_lib import get_translation, _json_loads
+from cudax_lib import get_translation
 _   = get_translation(__file__)  # I18N
 
 DATA_DIR = ct.app_path(ct.APP_DIR_DATA)
@@ -1036,11 +1037,10 @@ class DlgSnipMan:
                     print(_('! ERROR: snippets path is not a file:{0}').format(snips_path))
                     continue
 
-                json_data = ''
+                snips = ''
                 with open(snips_path, 'r', encoding='utf-8') as f:
-                    json_data = f.read()
-                        
-                snips = _json_loads(json_data)
+                    snips = load_json(f, fn=snips_path)
+
                 #pass; print(' * loaded snips:{0}'.format(len(snips)))
 
                 self.file_snippets[(package_path,snips_fn)] = snips

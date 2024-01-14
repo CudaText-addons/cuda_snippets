@@ -1,5 +1,6 @@
 import json
 import string
+from cudax_lib import _json_loads
 
 CHARS_SNIP = string.ascii_letters + string.digits + '_.$>:#'
 # char '>' is here to disable plugin work after "ul>li", to pass it to Emmet (which has lower event priority)
@@ -93,7 +94,7 @@ def load_json(fp, *args, **kwargs):
         return {}
     # Calls the wrapped to parse JSON
     try:
-        return json.loads(standard_json, *args, **kwargs)
+        return _json_loads(standard_json, *args, **kwargs)
     except json.decoder.JSONDecodeError:
         print('ERROR: Plugin "Snippets" failed to load JSON content')
         print(standard_json)
