@@ -1,7 +1,8 @@
-2024.01.13
+2024.01.14
+patches by @veksha
 + add: added (none) lexer for possible lexers for snippets
-- fix: JSONDecodeError. replaced "json.loads" with "_json_loads" which removes comments (thanks Alexey T.)
-- fix: vscode snippets "search dialog" ui fixes and adjustments
+- fix: crash if snippets JSON has comments; replaced "json.loads" with "_json_loads" which removes comments (thanks Alexey T.)
+- fix: VSCode snippets "Search dialog" UI fixes and adjustments
 
 2023.12.22
 - fix: adapt for changed menu_proc API
