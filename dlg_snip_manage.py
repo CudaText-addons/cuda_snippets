@@ -701,7 +701,7 @@ class DlgSnipMan:
         if not self.modified:
             return True
         else:
-            res = ct.msg_box("Save changes?", ct.MB_YESNOCANCEL + ct.MB_ICONWARNING)
+            res = ct.msg_box(_("Save changes?"), ct.MB_YESNOCANCEL + ct.MB_ICONWARNING)
             if res == ct.ID_YES:
                 self._save_changes()
                 return True
