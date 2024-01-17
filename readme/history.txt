@@ -1,3 +1,11 @@
+2024.01.17
+patches by @veksha
++ add: if user presses ESC: ask to save changes
++ add: Snippet Dialog called second time will restore comboboxes selection
+- fix: less debug prints
+- fix: fixed Tab Order of controls by moving around code
++ add: made dialog keyboard friendly.
+
 2024.01.14
 patches by @veksha
 + add: added (none) lexer for possible lexers for snippets
