@@ -114,6 +114,43 @@ class DlgSnipMan:
         ### Controls
 
         # Cancel | Ok | Help
+        n_ed_lexer = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n_ed_lexer,
+                    prop={
+                        'name': 'ed_lex',
+                        'w_min': bw,
+                        'sp_a': 6,
+                        'autosize': True,
+                        'cap': _('&Editor\'s Lexer'),
+                        'on_change': self._menu_ed_lex,
+                        }
+                    )
+
+        n_help = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n_help,
+                    prop={
+                        'name': 'help',
+                        'w_min': bw,
+                        'sp_a': 6,
+                        'sp_l': 10,
+                        'autosize': True,
+                        'cap': _('Macros &Help'),
+                        'on_change': self._dlg_help,
+                        }
+                    )
+
+        self.n_cancel = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_cancel,
+                    prop={
+                        'name': 'cancel',
+                        'w_min': bw,
+                        'sp_a': 6,
+                        'autosize': True,
+                        'cap': _('&Cancel'),
+                        'on_change': self._dismiss_dlg,
+                        }
+                    )
+
         self.n_ok = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_ok,
                     prop={
@@ -125,60 +162,11 @@ class DlgSnipMan:
                         'w_min': bw,
                         'sp_a': 6,
                         'autosize': True,
-                        'cap': _('OK'),
+                        'cap': _('&OK'),
                         'on_change': self._save_changes_and_close,
                         }
                     )
-
-        self.n_cancel = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_cancel,
-                    prop={
-                        'name': 'cancel',
-                        'a_l': None,
-                        'a_t': ('ok', '-'),
-                        'a_r': ('ok', '['),
-                        'a_b': ('',']'),
-                        'w_min': bw,
-                        'sp_a': 6,
-                        'autosize': True,
-                        'cap': _('Cancel'),
-                        'on_change': self._dismiss_dlg,
-                        }
-                    )
-
-        n = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
-                    prop={
-                        'name': 'ed_lex',
-                        'a_l': ('', '['),
-                        'a_t': ('ok', '-'),
-                        'a_r': None,
-                        'a_b': ('',']'),
-                        'w_min': bw,
-                        'sp_a': 6,
-                        'autosize': True,
-                        'cap': _('Editor\'s Lexer'),
-                        'on_change': self._menu_ed_lex,
-                        }
-                    )
-
-        n = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
-                    prop={
-                        'name': 'help',
-                        'a_l': ('ed_lex', ']'),
-                        'a_t': ('ok', '-'),
-                        'a_r': None,
-                        'a_b': ('',']'),
-                        'w_min': bw,
-                        'sp_a': 6,
-                        'sp_l': 10,
-                        'autosize': True,
-                        'cap': _('Macros Help'),
-                        'on_change': self._dlg_help,
-                        }
-                    )
-
+        
         ### Main
         n = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'group')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
@@ -202,7 +190,31 @@ class DlgSnipMan:
                         'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
-                        'cap': _('Package: '),
+                        'cap': _('&Package: '),
+                        }
+                    )
+                    
+        self.n_package = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'combo_ro')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_package,
+                    prop={
+                        'name': 'packages',
+                        'p': 'parent',
+                        'sp_a': 3,
+                        'act': True,
+                        'on_change': self._on_package_selected,
+                        }
+                    )
+
+        self.n_add_pkg = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_pkg,
+                    prop={
+                        'name': 'add_pkg',
+                        'p': 'parent',
+                        'w_min': bw,
+                        'sp_a': 3,
+                        'cap': _('Add...'),
+                        'en': True,
+                        'on_change': self._create_pkg,
                         }
                     )
 
@@ -222,36 +234,6 @@ class DlgSnipMan:
                         }
                     )
 
-        self.n_add_pkg = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_pkg,
-                    prop={
-                        'name': 'add_pkg',
-                        'p': 'parent',
-                        'a_l': None,
-                        'a_t': ('pkg_label','-'),
-                        'a_r': ('del_pkg','['),
-                        'w_min': bw,
-                        'sp_a': 3,
-                        'cap': _('Add...'),
-                        'en': True,
-                        'on_change': self._create_pkg,
-                        }
-                    )
-
-        self.n_package = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'combo_ro')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_package,
-                    prop={
-                        'name': 'packages',
-                        'p': 'parent',
-                        'a_l': ('pkg_label', ']'),
-                        'a_t': ('pkg_label','-'),
-                        'a_r': ('add_pkg','['),
-                        'sp_a': 3,
-                        'act': True,
-                        'on_change': self._on_package_selected,
-                        }
-                    )
-
         # group
         n = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'label')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
@@ -263,10 +245,35 @@ class DlgSnipMan:
                         'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
-                        'cap': _('Group: '),
+                        'cap': _('&Group: '),
                         }
                     )
 
+        self.n_groups = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'combo_ro')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_groups,
+                    prop={
+                        'name': 'groups',
+                        'p': 'parent',
+                        'sp_a': 3,
+                        'act': True,
+                        'on_change': self._on_group_selected,
+                        'en': False,
+                        }
+                    )
+
+        self.n_add_group = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_group,
+                    prop={
+                        'name': 'add_group',
+                        'p': 'parent',
+                        'w_min': bw,
+                        'sp_a': 3,
+                        'cap': _('Add...'),
+                        'en': False,
+                        'on_change': self._create_group,
+                        }
+                    )
+        
         self.n_del_group = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_del_group,
                     prop={
@@ -283,37 +290,6 @@ class DlgSnipMan:
                         }
                     )
 
-        self.n_add_group = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_group,
-                    prop={
-                        'name': 'add_group',
-                        'p': 'parent',
-                        'a_l': None,
-                        'a_t': ('grp_label','-'),
-                        'a_r': ('del_group','['),
-                        'w_min': bw,
-                        'sp_a': 3,
-                        'cap': _('Add...'),
-                        'en': False,
-                        'on_change': self._create_group,
-                        }
-                    )
-
-        self.n_groups = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'combo_ro')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_groups,
-                    prop={
-                        'name': 'groups',
-                        'p': 'parent',
-                        'a_l': ('grp_label', ']'),
-                        'a_t': ('grp_label','-'),
-                        'a_r': ('add_group','['),
-                        'sp_a': 3,
-                        'act': True,
-                        'on_change': self._on_group_selected,
-                        'en': False,
-                        }
-                    )
-
         # lexer
         n = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'label')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
@@ -326,7 +302,17 @@ class DlgSnipMan:
                         'sp_a': 3,
                         'sp_t': 6,
                         'sp_l': 30,
-                        'cap': _('Group\'s lexers: '),
+                        'cap': _('Group\'s &lexers: '),
+                        }
+                    )
+
+        self.n_lex = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'edit')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_lex,
+                    prop={
+                        'name': 'lexers',
+                        'p': 'parent',
+                        'sp_a': 3,
+                        'en': False,
                         }
                     )
 
@@ -346,19 +332,6 @@ class DlgSnipMan:
                         }
                     )
 
-        self.n_lex = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'edit')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_lex,
-                    prop={
-                        'name': 'lexers',
-                        'p': 'parent',
-                        'a_l': ('lex_label', ']'),
-                        'a_t': ('lex_label','-'),
-                        'a_r': ('add_lex','['),
-                        'sp_a': 3,
-                        'en': False,
-                        }
-                    )
-
         # snippet
         n = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'label')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
@@ -370,7 +343,32 @@ class DlgSnipMan:
                         'w_min': lw,
                         'sp_a': 3,
                         'sp_t': 6,
-                        'cap': _('Snippet: '),
+                        'cap': _('&Snippet: '),
+                        }
+                    )
+
+        self.n_snippets = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'combo_ro')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_snippets,
+                    prop={
+                        'name': 'snippets',
+                        'p': 'parent',
+                        'sp_a': 3,
+                        'on_change': self._on_snippet_selected,
+                        'act': True,
+                        'en': False,
+                        }
+                    )
+
+        self.n_add_snip = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_snip,
+                    prop={
+                        'name': 'add_snip',
+                        'p': 'parent',
+                        'w_min': bw,
+                        'sp_a': 3,
+                        'cap': _('Add...'),
+                        'en': False,
+                        'on_change': self._create_snip,
                         }
                     )
 
@@ -390,37 +388,6 @@ class DlgSnipMan:
                         }
                     )
 
-        self.n_add_snip = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_snip,
-                    prop={
-                        'name': 'add_snip',
-                        'p': 'parent',
-                        'a_l': None,
-                        'a_t': ('snip_label','-'),
-                        'a_r': ('del_snip','['),
-                        'w_min': bw,
-                        'sp_a': 3,
-                        'cap': _('Add...'),
-                        'en': False,
-                        'on_change': self._create_snip,
-                        }
-                    )
-
-        self.n_snippets = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'combo_ro')
-        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_snippets,
-                    prop={
-                        'name': 'snippets',
-                        'p': 'parent',
-                        'a_l': ('snip_label', ']'),
-                        'a_t': ('snip_label','-'),
-                        'a_r': ('add_snip','['),
-                        'sp_a': 3,
-                        'on_change': self._on_snippet_selected,
-                        'act': True,
-                        'en': False,
-                        }
-                    )
-
         self.n_rename_snip = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'button')
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_rename_snip,
                     prop={
@@ -431,7 +398,7 @@ class DlgSnipMan:
                         'a_r': ('',']'),
                         'w_min': 2*bw + 3,
                         'sp_a': 3,
-                        'cap': _('Rename snippet...'),
+                        'cap': _('&Rename snippet...'),
                         'en': False,
                         'on_change': self._dlg_rename_snip,
                         }
@@ -449,7 +416,7 @@ class DlgSnipMan:
                         'sp_a': 3,
                         'sp_t': 6,
                         'sp_l': 30,
-                        'cap': _('Snippet\'s alias: '),
+                        'cap': _('Snippet\'s &alias: '),
                         }
                     )
 
@@ -480,6 +447,55 @@ class DlgSnipMan:
                         'sp_t': 6,
                         }
                     )
+        
+        # align the following controls only after all of them have been created
+        # so correct tab order is possible
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_package,
+                    prop={  'a_l': ('pkg_label', ']'),
+                            'a_t': ('pkg_label','-'),
+                            'a_r': ('add_pkg','[')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_pkg,
+                    prop={  'a_l': None,
+                            'a_t': ('pkg_label','-'),
+                            'a_r': ('del_pkg','[')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_groups,
+                    prop={  'a_l': ('grp_label', ']'),
+                            'a_t': ('grp_label','-'),
+                            'a_r': ('add_group','[')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_group,
+                    prop={  'a_l': None,
+                            'a_t': ('grp_label','-'),
+                            'a_r': ('del_group','[')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_lex,
+                    prop={  'a_l': ('lex_label', ']'),
+                            'a_t': ('lex_label','-'),
+                            'a_r': ('add_lex','[')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_snippets,
+                    prop={  'a_l': ('snip_label', ']'),
+                            'a_t': ('snip_label','-'),
+                            'a_r': ('add_snip','[')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_add_snip,
+                    prop={  'a_l': None,
+                            'a_t': ('snip_label','-'),
+                            'a_r': ('del_snip','[')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_cancel,
+                    prop={  'a_l': None,
+                            'a_t': ('ok', '-'),
+                            'a_r': ('ok', '['),
+                            'a_b': ('',']')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n_ed_lexer,
+                    prop={  'a_l': ('', '['),
+                            'a_t': ('ok', '-'),
+                            'a_r': None,
+                            'a_b': ('',']')})
+        ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n_help,
+                    prop={  'a_l': ('ed_lex', ']'),
+                            'a_t': ('ok', '-'),
+                            'a_r': None,
+                            'a_b': ('',']')})
+        
+        ct.dlg_proc(self.h, ct.DLG_CTL_FOCUS, name='ok')
+        
         h_ed = ct.dlg_proc(self.h, ct.DLG_CTL_HANDLE, index=self.n_edit)
         self.ed = ct.Editor(h_ed)
         self.ed.set_prop(ct.PROP_NEWLINE, 'lf') # for ease of splitting to lines
