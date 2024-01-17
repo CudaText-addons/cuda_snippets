@@ -78,6 +78,11 @@ Date/time:
 
 
 class DlgSnipMan:
+    # save/restore combobox values
+    _package_val = None
+    _groups_val = None
+    _snippets_val = None
+    
     def __init__(self, select_lex=None):
         self.select_lex = select_lex # select first group with this lexer, mark in menus
 
@@ -85,6 +90,7 @@ class DlgSnipMan:
         self.last_selected_pkg_grp = None
         self.last_selected_snippet = None
         self.snippets_changed = False
+        self.skip_asking_to_save = False
 
         self.packages = self._load_packages()
         self._sort_pkgs()
@@ -100,6 +106,7 @@ class DlgSnipMan:
                         'w': w,
                         'h': h,
                         'border': ct.DBORDER_SIZE,
+                        'on_close_query': self._ask_save_changes,
                         }
                     )
 
@@ -119,7 +126,7 @@ class DlgSnipMan:
                         'sp_a': 6,
                         'autosize': True,
                         'cap': _('OK'),
-                        'on_change': self._save_changes,
+                        'on_change': self._save_changes_and_close,
                         }
                     )
 
@@ -483,6 +490,19 @@ class DlgSnipMan:
         self.ed.set_prop(ct.PROP_MODERN_SCROLLBAR, False)
 
         self._fill_forms(init_lex_sel=self.select_lex) # select first group with specified lexer if any
+        
+        # if comboboxes selections was saved -> restore them
+        if self._package_val is not None:
+            if self._package_val >= 0:
+                ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_package, prop={'val': self._package_val})
+                self._on_package_selected(-1, -1)
+            if self._groups_val >= 0:
+                ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_groups, prop={'val': self._groups_val})
+                self._on_group_selected(-1, -1)
+            if self._snippets_val >= 0:
+                ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=self.n_snippets, prop={'val': self._snippets_val})
+                self._on_snippet_selected(-1, -1)
+            
 
 
     def _fill_forms(self, init_lex_sel=None, sel_pkg_path=None, sel_group=None, sel_snip=None, reason=''):
@@ -555,7 +575,6 @@ class DlgSnipMan:
         return self.snippets_changed
 
     def _save_changes(self, *args, **vargs):
-        print(_('Saving changes'))
 
         #pass; print('saving changes: {0}'.format(self.modified))
 
@@ -574,7 +593,7 @@ class DlgSnipMan:
                 p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_lex)
                 newlexs = [lex.strip() for lex in p['val'].split(',') if lex.strip()]
                 if oldlexes != newlexs:
-                    print(_('* Group\'s lexers changed: [{0}] => [{1}]').format(oldlexes, newlexs))
+                    #print(_('* Group\'s lexers changed: [{0}] => [{1}]').format(oldlexes, newlexs))
                     pkg['files'][snips_fn] = newlexs
                     self.modified.append((TYPE_PKG, pkg['path']))
     
@@ -586,7 +605,7 @@ class DlgSnipMan:
                     p = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_alias)
                     newalias = p['val']
                     if oldalias != newalias:
-                        print(_('* snippet\'s alias changed: [{0}] => [{1}]').format(oldalias, newalias))
+                        #print(_('* snippet\'s alias changed: [{0}] => [{1}]').format(oldalias, newalias))
                         snip['prefix'] = newalias
                         self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
     
@@ -594,11 +613,13 @@ class DlgSnipMan:
                     oldbody = snip['body']
                     newbody = self.ed.get_text_all().split('\n') # line end is always 'lf'
                     if oldbody != newbody:
-                        print(_('* snippet\'s body changed:\n{0}\n ==>>\n{1}').format('\n'.join(oldbody), '\n'.join(newbody)))
+                        #print(_('* snippet\'s body changed:\n{0}\n ==>>\n{1}').format('\n'.join(oldbody), '\n'.join(newbody)))
                         snip['body'] = newbody
                         self.modified.append((TYPE_GROUP, pkg['path'], snips_fn, snip_name))
 
         # save modified
+        if self.modified:
+            print(_('Saving changes'))
         saved_files = set() # save each file only once
         for mod in self.modified:
             # lexers changed, created group, created package, deleted group
@@ -646,10 +667,35 @@ class DlgSnipMan:
         if self.modified:
             print('    '+_('Saved.'))
 
+    def _save_changes_and_close(self, *args, **vargs):
+        self._save_changes()
+        self.skip_asking_to_save = True
         ct.dlg_proc(self.h, ct.DLG_HIDE)
-
-
+    
+    def _ask_save_changes(self, *args, **vargs):
+        # save comboboxes selections
+        DlgSnipMan._package_val = int(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_package)['val'])
+        DlgSnipMan._groups_val = int(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_groups)['val'])
+        DlgSnipMan._snippets_val = int(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, index=self.n_snippets)['val'])
+        
+        if self.skip_asking_to_save:
+            return
+        
+        self._put_unsaved_changes_to_dict(also_put_lexers=True)
+        if not self.modified:
+            return True
+        else:
+            res = ct.msg_box("Save changes?", ct.MB_YESNOCANCEL + ct.MB_ICONWARNING)
+            if res == ct.ID_YES:
+                self._save_changes()
+                return True
+            elif res == ct.ID_NO:
+                return True
+            else:
+                return False
+        
     def _dismiss_dlg(self, *args, **vargs):
+        self.skip_asking_to_save = True
         ct.dlg_proc(self.h, ct.DLG_HIDE)
 
 
@@ -690,7 +736,7 @@ class DlgSnipMan:
         #print("ed_modified:{} oldalias:{} newalias:{}".format(ed_modified,oldalias,newalias))
         if ed_modified or (oldalias != newalias):
             #print('NOTE: Storing "{}" snippet in dict'.format(name))
-            snip_text = self.ed.get_text_all()
+            snip_text = self.ed.get_text_all().split('\n')
             
             snips = self.file_snippets.get((pkg['path'], snips_fn)) # snippets of last selected group will be loaded
 
@@ -712,6 +758,7 @@ class DlgSnipMan:
         #pass; print(' snip sel:{0}: {1}'.format(snip_name, snip))
 
         if not all((pkg, snips_fn, snip_name, snip)):
+            self.last_selected_snippet = None # clear
             return
 
         if not self.current_pkg_readonly:
