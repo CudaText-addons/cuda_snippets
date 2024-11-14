@@ -81,17 +81,15 @@ class Command:
             focused = items.index(self.last_snippet)
         except ValueError:
             focused = 0
+
         while True:
-            i = ct.dlg_menu(ct.DMENU_LIST+ct.DMENU_NO_FULLFILTER, names, focused=focused, caption=_('Snippets'))
-            if i is None:
-                return
+            focused = ct.dlg_menu(ct.DMENU_LIST+ct.DMENU_NO_FULLFILTER, names, focused=focused, caption=_('Snippets'))
+            if focused is None: return
             key_state = ct.app_proc(ct.PROC_GET_KEYSTATE, '')
-            modifier_pressed = 'c' in key_state
-            self.last_snippet = items[i]
+            self.last_snippet = items[focused]
             self.last_snippet.insert(ct.ed)
-            if not modifier_pressed:
-                break
-            focused = i
+            # Ctrl is pressed - show dlg again
+            if not 'c' in key_state: break
 
     def do_menu(self):
         self.menu_dlg(self.lex_snippets)
