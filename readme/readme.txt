@@ -16,6 +16,12 @@ Snippet folders (format of data is the same, VSCode JSON format):
   These are VSCode packages located in the VSCode repositories.
   They are installed to folder [CudaText]/data/snippets_vs.
   VSCode format support was big work done by @OlehL.
+
+Usage notes:
+
+- Ctrl+Enter (and Ctrl+mouse_click) in the snippets menu-like dialog makes dialog appear again
+  after snippet insertion.
+
   
 Authors:
   Alexey Torgashin (CudaText)
