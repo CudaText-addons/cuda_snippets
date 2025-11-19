@@ -2,23 +2,11 @@ import os
 import shutil
 import cudatext as ct
 from cuda_snippets import snip as sn
+from cudax_lib import safe_open_url, get_translation
 
-from cudax_lib import get_translation
 _   = get_translation(__file__)  # I18N
 
 DATA_DIR = ct.app_path(ct.APP_DIR_DATA)
-
-
-def safe_open_url(url):
-    '''
-    On Windows 10, app crashes when webbrowser.open* is called with running LSP server.
-    '''
-    if os.name=='nt':
-        import subprocess
-        subprocess.Popen(['start', '', url], shell=True)
-    else:
-        import webbrowser
-        webbrowser.open_new_tab(url)
 
 
 class Command:
