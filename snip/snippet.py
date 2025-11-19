@@ -204,8 +204,8 @@ class Snippet:
             ed.set_caret(x0, y0)
 
         # parse Tabstops and Placeholders
-        _mrks = ed.markers(ct.MARKERS_GET) or {}
-        basetag = max([i[-1] for i in _mrks]) if _mrks else 0
+        _mrks = ed.markers(ct.MARKERS_GET_DICT)
+        basetag = max([i['tag'] for i in _mrks]) if _mrks else 0
         s_text, zero_markers, markers = self.parse_tabstops(sn, x0, y0, basetag=basetag)
         if not s_text:
             print(_('Wrong snippet: {}').format(self.name))
@@ -222,8 +222,9 @@ class Snippet:
         old_zero_markers, old_markers = [], []
         basetag = max([i['tag'] for i in markers]) if markers else 0
         for mk in _mrks:
-            x, y = mk[0], mk[1]
-            tag = mk[4]
+            x = mk['x']
+            y = mk['y']
+            tag = mk['tag']
 
             if tag != 0:
                 tag += basetag
@@ -232,7 +233,7 @@ class Snippet:
             elif y == y0 and x > x0:
                 x += len(sn[0]) - 1
 
-            m = marker(x, y, tag, mk[2], mk[3])
+            m = marker(x, y, tag, mk['len_x'], mk['len_y'])
             if m['tag'] == 0:
                 old_zero_markers.append(m)
             else:
