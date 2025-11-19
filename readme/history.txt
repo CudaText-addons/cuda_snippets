@@ -1,3 +1,6 @@
+2025.11.19
+- fix: avoid deprecated API: MARKERS_GET
+
 2024.11.14
 + add: Ctrl+Enter (and Ctrl+mouse_click) in snippets dialog makes dialog appear again after snippet insertion
 
@@ -144,6 +147,5 @@ Big rework by @OlehL:
 1.0.1
 + support macros ${sel} ${cp} ${fname}
 
-1.0.0 (nov 2015)
-init
-
+1.0.0 (2015.11)
+initial version
