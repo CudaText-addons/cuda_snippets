@@ -190,6 +190,7 @@ class Snippet:
         if self.type == VS_SNIPPET:
             sn = self.parse_vars_vs(vars_state, sn)
         else:
+            sn = self.parse_vars_vs(vars_state, sn)
             sn = self.parse_vars_ct(vars_state, sn)
 
         # delete selection
@@ -359,6 +360,7 @@ class Snippet:
             '${sel}': v.text_sel,  # The currently selected text or the empty string
             '${cp}': v.clipboard,
             '${fname}': v.fn,
+            '${fname_base}': op.splitext(v.fn)[0],
             '${fpath}': v.fp,
             '${fdir}': v.fdir,
             '${fext}': op.splitext(v.fn)[1],
