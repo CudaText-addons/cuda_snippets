@@ -1,3 +1,7 @@
+2026.05.13
++ add: new macro ${fname_base} to place filename without extension
++ add: $TM_xxxx macros are now also supported for user-made snippets (before they supported only for snippets from VSCode)
+
 2025.11.19
 - fix: avoid deprecated API: MARKERS_GET
 
