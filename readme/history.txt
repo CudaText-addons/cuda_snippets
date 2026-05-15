@@ -1,4 +1,5 @@
-2026.05.13
+2026.05.15
++ add: Tab-key now supports non-English Unicode snippet prefixes
 + add: new macro ${fname_base} to place filename without extension
 + add: all previously implemented macros from Sublime are now also supported for user-made snippets (before they were supported only for snippets from VSCode)
 
