@@ -2,7 +2,7 @@ import json
 import string
 from cudax_lib import _json_loads
 
-CHARS_SNIP = string.ascii_letters + string.digits + '_.$>:#'
+CHARS_SNIP = '_.$>:#'
 # char '>' is here to disable plugin work after "ul>li", to pass it to Emmet (which has lower event priority)
 # chars '.#' are here to disable plugin work after '#dd' and '.dd', to pass it to Emmet
 
@@ -27,7 +27,7 @@ def get_word(ed):
         return
 
     x0 = x
-    while x > 0 and (line[x - 1] in CHARS_SNIP):
+    while (x > 0) and (line[x - 1].isalnum() or (line[x - 1] in CHARS_SNIP)):
         x -= 1
     return line[x:x0]
 
