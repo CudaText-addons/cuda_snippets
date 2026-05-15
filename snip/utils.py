@@ -1,13 +1,14 @@
 import json
-import string
 from cudax_lib import _json_loads
-
-CHARS_SNIP = '_.$>:#'
-# char '>' is here to disable plugin work after "ul>li", to pass it to Emmet (which has lower event priority)
-# chars '.#' are here to disable plugin work after '#dd' and '.dd', to pass it to Emmet
 
 
 def get_word(ed):
+
+    CHARS_SNIP = '_.$>:#'
+    # char '>' is here to disable plugin work after "ul>li", to pass it to Emmet (which has lower event priority)
+    # chars '.#' are here to disable plugin work after '#dd' and '.dd', to pass it to Emmet
+    #-----------
+
     # multi-carets? stop
     carets = ed.get_carets()
     if len(carets) != 1:
