@@ -1,3 +1,6 @@
+2026.05.17
++ add: don't expand snippet by Tab-key when Tab-key is currently jumping over snippet tabstops (thanks @egfips)
+
 2026.05.15
 + add: Tab-key now supports non-English Unicode snippet prefixes
 + add: new macro ${fname_base} to place filename without extension
