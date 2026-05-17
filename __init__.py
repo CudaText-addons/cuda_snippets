@@ -37,6 +37,9 @@ class Command:
         if state != '':
             return  # pressed any meta keys
 
+        if ed_self.get_prop(ct.PROP_TAB_COLLECT_MARKERS, ''):
+            return
+
         name = sn.get_word(ed_self)
         if not name:
             return
